@@ -11,7 +11,7 @@ var simulation = d3.forceSimulation()
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-d3.json('http://54.83.196.116:18010/asset-v1:edX+DemoX+Demo_Course+type@asset+block@data.json', function (error, graph) {
+d3.json(document.jsonUrl, function (error, graph) {
     if (error) throw new error;
 
     var nodes = graph.nodes,

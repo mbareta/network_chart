@@ -5,8 +5,18 @@ html, body, p {
     font-family: sans;
 }
 
+.xblock-render .main-container {
+    position: relative !important;
+    overflow: hidden;
+}
+
 .main-container {
     background-color: #a74520;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
 }
 
 .hidden {

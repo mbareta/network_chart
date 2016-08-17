@@ -3,7 +3,7 @@
 import pkg_resources
 
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer
+from xblock.fields import Scope, String
 from xblock.fragment import Fragment
 
 
@@ -14,6 +14,7 @@ class NetworkChartXBlock(XBlock):
 
     # Fields are defined on the class.  You can access them in your code as
     # self.<fieldname>.
+    json_url = String(help="URL of the JSON data", default=None, scope=Scope.content)
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -26,8 +27,10 @@ class NetworkChartXBlock(XBlock):
         The primary view of the NetworkChartXBlock, shown to students
         when viewing courses.
         """
-        html = self.resource_string("static/html/network_chart.html")
-        frag = Fragment(html.format(self=self))
+        html_str = pkg_resources.resource_string(__name__, "static/html/network_chart.html")
+        frag = Fragment(unicode(html_str).format(
+                                                json_url=self.json_url
+                                                ))
         frag.add_css(self.resource_string("static/css/chart.css"))
         frag.add_css(self.resource_string("static/css/tooltip.css"))
         frag.add_javascript(self.resource_string("static/js/src/d3.v4.js"))
@@ -40,7 +43,7 @@ class NetworkChartXBlock(XBlock):
         Create a fragment used to display the edit view in the Studio.
         """
         html_str = pkg_resources.resource_string(__name__, "static/html/studio_view.html")
-        frag = Fragment(unicode(html_str).format(display_name=self.display_name))
+        frag = Fragment(unicode(html_str).format(display_name=self.display_name, json_url=self.json_url))
         js_str = pkg_resources.resource_string(__name__, "static/js/src/studio_edit.js")
         frag.add_javascript(unicode(js_str))
         frag.initialize_js('StudioEdit')
@@ -52,6 +55,7 @@ class NetworkChartXBlock(XBlock):
         Called when submitting the form in Studio.
         """
         self.display_name = data.get('display_name')
+        self.json_url = data.get('json_url')
 
         return {'result': 'success'}
 
