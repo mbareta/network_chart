@@ -3,15 +3,15 @@
  */
 
 /* Base styles for the element that has a tooltip */
-[data-tooltip],
+[data-mit_tooltip],
 .tooltip {
   position: relative;
   cursor: pointer;
 }
 
 /* Base styles for the entire tooltip */
-[data-tooltip]:before,
-[data-tooltip]:after,
+[data-mit_tooltip]:before,
+[data-mit_tooltip]:after,
 .tooltip:before,
 .tooltip:after {
   position: absolute;
@@ -26,10 +26,10 @@
 }
 
 /* Show the entire tooltip on hover and focus */
-[data-tooltip]:hover:before,
-[data-tooltip]:hover:after,
-[data-tooltip]:focus:before,
-[data-tooltip]:focus:after,
+[data-mit_tooltip]:hover:before,
+[data-mit_tooltip]:hover:after,
+[data-mit_tooltip]:focus:before,
+[data-mit_tooltip]:focus:after,
 .tooltip:hover:before,
 .tooltip:hover:after,
 .tooltip:focus:before,
@@ -40,7 +40,7 @@
 
 /* Base styles for the tooltip's directional arrow */
 .tooltip:before,
-[data-tooltip]:before {
+[data-mit_tooltip]:before {
   z-index: 1001;
   border: 6px solid transparent;
   background: transparent;
@@ -49,13 +49,13 @@
 
 /* Base styles for the tooltip's content area */
 .tooltip:after,
-[data-tooltip]:after {
+[data-mit_tooltip]:after {
   z-index: 1000;
   padding: 10px;
   width: 100px;
   background-color: #da7049;
   color: #fff;
-  content: attr(data-tooltip);
+  content: attr(data-mit_tooltip);
   font-size: 14px;
   font-family: sans;
   line-height: 1.2;
@@ -65,8 +65,8 @@
 /* Directions */
 
 /* Top (default) */
-[data-tooltip]:before,
-[data-tooltip]:after,
+[data-mit_tooltip]:before,
+[data-mit_tooltip]:after,
 .tooltip:before,
 .tooltip:after,
 .tooltip-top:before,
@@ -75,7 +75,7 @@
   left: 50%;
 }
 
-[data-tooltip]:before,
+[data-mit_tooltip]:before,
 .tooltip:before,
 .tooltip-top:before {
   margin-left: -6px;
@@ -84,16 +84,16 @@
 }
 
 /* Horizontally align top/bottom tooltips */
-[data-tooltip]:after,
+[data-mit_tooltip]:after,
 .tooltip:after,
 .tooltip-top:after {
   margin-left: -60px;
 }
 
-[data-tooltip]:hover:before,
-[data-tooltip]:hover:after,
-[data-tooltip]:focus:before,
-[data-tooltip]:focus:after,
+[data-mit_tooltip]:hover:before,
+[data-mit_tooltip]:hover:after,
+[data-mit_tooltip]:focus:before,
+[data-mit_tooltip]:focus:after,
 .tooltip:hover:before,
 .tooltip:hover:after,
 .tooltip:focus:before,

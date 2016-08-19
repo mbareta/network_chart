@@ -109,7 +109,7 @@ d3.json(document.jsonUrl, function (error, graph) {
 
         nodes.forEach(function (node) {
             var listElementNode = d.createElement("LI");
-            listElementNode.dataset.tooltip = node.id;
+            listElementNode.dataset.mit_tooltip = node.id;
             var imgNode = d.createElement('img');
             imgNode.src = 'http://54.83.196.116:18010/asset-v1:edX+DemoX+Demo_Course+type@asset+block@person.jpg';
             imgNode.onclick = function () {
