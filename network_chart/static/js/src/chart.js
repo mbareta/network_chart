@@ -1,11 +1,133 @@
 function initChart() {
     var chart = document.getElementById("chart");
-    var width;
+    var svg = d3.select("svg"),
+        width = window.outerWidth,
+        height = window.outerHeight;
 
+    console.log("width: ", width);
+    console.log("height: ", height);
+
+    var simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().distance(250).strength(0.5))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    d3.json(document.jsonUrl, function (error, graph) {
+        if (error) throw new error;
+
+        var nodes = graph.nodes,
+            nodeById = d3.map(nodes, function (d) {
+                return d.id;
+            }),
+            links = graph.links,
+            bilinks = [];
+
+        links.forEach(function (link) {
+            var s = link.source = nodeById.get(link.source),
+                t = link.target = nodeById.get(link.target),
+                i = {}; // intermediate node
+            nodes.push(i);
+            links.push({source: s, target: i}, {source: i, target: t});
+            bilinks.push([s, i, t]);
+        });
+
+        var link = svg.selectAll(".link")
+            .data(bilinks)
+            .enter().append("path")
+            .attr("class", "link");
+
+        var node = svg.selectAll(".node")
+            .data(nodes.filter(function (d) {
+                return d.id;
+            }))
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", 10)
+            .on("click", function (selected_node) {
+                var data = getNearLinksAndNodes(selected_node);
+                highlightElements(data, selected_node);
+                exposeSiblingNodes(data.nodes);
+                getInfoForSelectedNode(selected_node);
+            })
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("title")
+            .text(function (d) {
+                return d.id;
+            });
+
+        simulation
+            .nodes(nodes)
+            .on("tick", ticked);
+
+        simulation.force("link")
+            .links(links);
+
+        function ticked() {
+            link.attr("d", positionLink);
+            node.attr("transform", positionNode);
+        }
+
+        /**
+         *  Find first sibling nodes and highlight their links
+         */
+
+        function getNearLinksAndNodes(node) {
+            var nearLinks = [];
+            var nearNodes = [];
+
+            links.forEach(function (link) {
+                if (link.source.id === node.id && link.value) {
+                    nearLinks.push(link);
+                    nearNodes.push(link.target);
+                } else if (link.target.id === node.id && link.value) {
+                    nearLinks.push(link);
+                    nearNodes.push(link.source);
+                }
+            });
+
+            return {
+                nodes: nearNodes,
+                links: nearLinks
+            };
+        }
+
+        /**
+         *  Expose data from nodes
+         */
+
+        function exposeSiblingNodes(nodes) {
+            var d = document;
+            var listNode = d.getElementById("dataList");
+
+            // clear existing list
+            while (listNode.firstChild) {
+                listNode.removeChild(listNode.firstChild);
+            }
+
+            nodes.forEach(function (node) {
+                var listElementNode = d.createElement("LI");
+                listElementNode.dataset.mit_tooltip = node.id;
+                var imgNode = d.createElement('img');
+                imgNode.src = node.img_url;
+                imgNode.onclick = function () {
+                    simulateClick(contains('title', node.id)[0].parentNode);
+                };
+                listElementNode.appendChild(imgNode);
+                listNode.appendChild(listElementNode);
+            })
+        }
+
+    });
     /**
      *  Helpers
      */
 
+
+    window.addEventListener("resize", initChart);
 // Check if DOM element contains text
     function contains(selector, text) {
         var elements = document.querySelectorAll(selector);
@@ -70,6 +192,7 @@ function initChart() {
         });
     }
 
+
     /**
      *  Get info about selected node
      */
@@ -77,7 +200,8 @@ function initChart() {
     function getInfoForSelectedNode(node) {
         var d = document;
         var infoContainer = d.getElementById("dataInfo");
-        infoContainer.setAttribute("style", "width:" + width / 8 + "px");
+
+        infoContainer.setAttribute("style", "width:" + window.outerHeight / 4 + "px");
         infoContainer.className = "active";
         infoContainer.innerHTML = "";
         // info text
@@ -97,159 +221,35 @@ function initChart() {
         infoContainer.appendChild(overlayElement);
     }
 
-    createGraph();
+    /**
+     * Functions which take care of dragging the graph nodes
+     */
 
-    function createGraph() {
-        var svg = d3.select("svg"),
-            height = parseInt(chart.offsetHeight);
-        width = parseInt(chart.offsetWidth);
-
-        var simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().distance(250).strength(0.5))
-            .force("charge", d3.forceManyBody())
-            .force("center", d3.forceCenter(width / 2, height / 2));
-        d3.json(document.jsonUrl, function (error, graph) {
-            if (error) throw new error;
-
-            var nodes = graph.nodes,
-                nodeById = d3.map(nodes, function (d) {
-                    return d.id;
-                }),
-                links = graph.links,
-                bilinks = [];
-
-            links.forEach(function (link) {
-                var s = link.source = nodeById.get(link.source),
-                    t = link.target = nodeById.get(link.target),
-                    i = {}; // intermediate node
-                nodes.push(i);
-                links.push({source: s, target: i}, {source: i, target: t});
-                bilinks.push([s, i, t]);
-            });
-
-            var link = svg.selectAll(".link")
-                .data(bilinks)
-                .enter().append("path")
-                .attr("class", "link");
-
-            var node = svg.selectAll(".node")
-                .data(nodes.filter(function (d) {
-                    return d.id;
-                }))
-                .enter().append("circle")
-                .attr("class", "node")
-                .attr("r", 10)
-                .on("click", function (selected_node) {
-                    var data = getNearLinksAndNodes(selected_node);
-                    highlightElements(data, selected_node);
-                    exposeSiblingNodes(data.nodes);
-                    getInfoForSelectedNode(selected_node);
-                })
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended));
-
-            node.append("title")
-                .text(function (d) {
-                    return d.id;
-                });
-
-            simulation
-                .nodes(nodes)
-                .on("tick", ticked);
-
-            simulation.force("link")
-                .links(links);
-
-            function ticked() {
-                link.attr("d", positionLink);
-                node.attr("transform", positionNode);
-            }
-
-            /**
-             *  Find first sibling nodes and highlight their links
-             */
-
-            function getNearLinksAndNodes(node) {
-                var nearLinks = [];
-                var nearNodes = [];
-
-                links.forEach(function (link) {
-                    if (link.source.id === node.id && link.value) {
-                        nearLinks.push(link);
-                        nearNodes.push(link.target);
-                    } else if (link.target.id === node.id && link.value) {
-                        nearLinks.push(link);
-                        nearNodes.push(link.source);
-                    }
-                });
-
-                return {
-                    nodes: nearNodes,
-                    links: nearLinks
-                };
-            }
-
-            /**
-             *  Expose data from nodes
-             */
-
-            function exposeSiblingNodes(nodes) {
-                var d = document;
-                var listNode = d.getElementById("dataList");
-
-                // clear existing list
-                while (listNode.firstChild) {
-                    listNode.removeChild(listNode.firstChild);
-                }
-
-                nodes.forEach(function (node) {
-                    var listElementNode = d.createElement("LI");
-                    listElementNode.dataset.mit_tooltip = node.id;
-                    var imgNode = d.createElement('img');
-                    imgNode.src = node.img_url;
-                    imgNode.onclick = function () {
-                        simulateClick(contains('title', node.id)[0].parentNode);
-                    };
-                    listElementNode.appendChild(imgNode);
-                    listNode.appendChild(listElementNode);
-                })
-            }
-
-        });
-
-        /**
-         * Functions which take care of dragging the graph nodes
-         */
-
-        function positionLink(d) {
-            return "M" + d[0].x + "," + d[0].y
-                + "S" + d[1].x + "," + d[1].y
-                + " " + d[2].x + "," + d[2].y;
-        }
-
-        function positionNode(d) {
-            return "translate(" + d.x + "," + d.y + ")";
-        }
-
-        function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(d) {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
-        }
-
-        function dragended(d) {
-            if (!d3.event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
+    function positionLink(d) {
+        return "M" + d[0].x + "," + d[0].y
+            + "S" + d[1].x + "," + d[1].y
+            + " " + d[2].x + "," + d[2].y;
     }
 
-    window.addEventListener("resize", initChart);
+    function positionNode(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+    }
+
+    function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
 }
+
