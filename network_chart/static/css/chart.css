@@ -52,11 +52,6 @@ html, body, p {
     min-height: 500px;
 }
 
-.highlight {
-    /* stroke: #fdfdfd; */
-    stroke: red;
-}
-
 /* List of sibling nodes */
 
 #dataList {
@@ -91,6 +86,11 @@ html, body, p {
     right: 11%;
     top: 30%;
     border: 7px solid #da7049;
+}
+
+#dataInfo img {
+    height: 100%;
+    overflow: hidden;
 }
 
 .data-info-overlay {
