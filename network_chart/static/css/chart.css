@@ -55,7 +55,7 @@ html, body, p {
 /* List of sibling nodes */
 
 #dataList {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     width: 100%;
     list-style: none;
@@ -82,7 +82,7 @@ html, body, p {
 /* Active node - container for info display */
 
 #dataInfo {
-    position: fixed;
+    position: absolute;
     right: 11%;
     top: 30%;
     border: 7px solid #da7049;

@@ -12,6 +12,13 @@ function initChart() {
         var chart_parent = chart.parentElement;
         width = chart_parent.offsetWidth;
         height = chart_parent.offsetHeight;
+
+        // in this case, the chart is rendering in studio, so we'll take
+        // first known container's width as a reference
+        if(width === 0) {
+            width = $('.content-primary').width();
+            height = width *0.5;
+        }
     }
 
     function createGraph() {
