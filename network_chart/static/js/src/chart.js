@@ -16,7 +16,7 @@ function initChart() {
 
     function createGraph() {
         var chart = document.getElementById("chart");
-        $chart.find("svg").empty();
+        $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
         var svg = d3.select("svg");
 
@@ -70,6 +70,7 @@ function initChart() {
                     .on("drag", dragged)
                     .on("end", dragended));
 
+            // set width and height for dataInfo container
             var $dataInfo = $("#dataInfo");
             var newWidth = width / 8;
             var newHeight = newWidth / ratio;
@@ -254,7 +255,6 @@ function initChart() {
             var d = document;
             var infoContainer = d.getElementById("dataInfo");
 
-            //infoContainer.setAttribute("style", "width:" + window.outerHeight / 4 + "px");
             infoContainer.className = "active";
             infoContainer.innerHTML = "";
             // info text
