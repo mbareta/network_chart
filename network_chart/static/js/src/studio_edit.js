@@ -4,6 +4,8 @@ function StudioEdit(runtime, element) {
     var data = {
       display_name: $(element).find('input[name=display_name]').val(),
       json_url: $(element).find('input[name=json_url]').val(),
+      thumbnail_url: $(element).find('input[name=thumbnail_url]').val(),
+      display_description: $(element).find('input[name=display_description]').val()
     };
     runtime.notify('save', {state: 'start'});
     $.post(handlerUrl, JSON.stringify(data)).done(function(response) {

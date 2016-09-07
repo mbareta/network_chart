@@ -14,6 +14,11 @@ class NetworkChartXBlock(XBlock):
 
     # Fields are defined on the class.  You can access them in your code as
     # self.<fieldname>.
+    display_name = String(display_name="Display Name",
+                          default="Network Chart",
+                          scope=Scope.settings,
+                          help="This name appears in the horizontal navigation at the top of the page.")
+
     json_url = String(help="URL of the JSON data", default=None, scope=Scope.content)
 
     def resource_string(self, path):
@@ -43,7 +48,12 @@ class NetworkChartXBlock(XBlock):
         Create a fragment used to display the edit view in the Studio.
         """
         html_str = pkg_resources.resource_string(__name__, "static/html/studio_view.html")
-        frag = Fragment(unicode(html_str).format(display_name=self.display_name, json_url=self.json_url))
+        frag = Fragment(unicode(html_str).format(
+                                                    display_name=self.display_name,
+                                                    json_url=self.json_url,
+                                                    display_description=self.display_description,
+                                                    thumbnail_url=self.thumbnail_url
+                                                ))
         js_str = pkg_resources.resource_string(__name__, "static/js/src/studio_edit.js")
         frag.add_javascript(unicode(js_str))
         frag.initialize_js('StudioEdit')
@@ -56,6 +66,8 @@ class NetworkChartXBlock(XBlock):
         """
         self.display_name = data.get('display_name')
         self.json_url = data.get('json_url')
+        self.display_description = data.get('display_description')
+        self.thumbnail_url = data.get('thumbnail_url')
 
         return {'result': 'success'}
 
