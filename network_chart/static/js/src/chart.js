@@ -51,6 +51,12 @@ function initChart() {
                 bilinks.push([s, i, t]);
             });
 
+            var tip = d3.tip()
+            .attr('class', 'tooltip')
+            .html(function (d) {
+                return "<strong>Name:</strong> <span style='color:red'>" + d.id + "</span>";
+            });
+
             var link = svg.selectAll(".link")
                 .data(bilinks)
                 .enter().append("path")
@@ -69,6 +75,9 @@ function initChart() {
                     exposeSiblingNodes(data.nodes);
                     getInfoForSelectedNode(selected_node);
                 })
+                .call(tip)
+                .on('mouseover', tip.show)
+                .on('mouseout', tip.hide)
                 // .call -> Invokes the specified function exactly once, passing in this selection
                 // along with any optional arguments. Returns this selection.
                 .call(d3.drag()
@@ -81,12 +90,13 @@ function initChart() {
             var newWidth = width / 8;
             var newHeight = newWidth / ratio;
 
+
             $dataInfo.width(newWidth).height(newHeight);
 
-            node.append("title")
+           /* node.append("title")
                 .text(function (d) {
                     return d.id;
-                });
+                });*/
 
             simulation
                 .nodes(nodes)
@@ -151,7 +161,7 @@ function initChart() {
                     imgNode.addEventListener("mouseover", function () {
                         var tempNode = contains('title', node.id)[0].parentNode;
                         var tempD3Node = d3.select(tempNode);
-                            tempD3Node.classed("active", true);
+                        tempD3Node.classed("active", true);
                     });
                     imgNode.addEventListener("mouseout", function () {
                         var tempNode = contains('title', node.id)[0].parentNode;
