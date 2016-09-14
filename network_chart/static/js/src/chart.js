@@ -15,9 +15,9 @@ function initChart() {
 
         // in this case, the chart is rendering in studio, so we'll take
         // first known container's width as a reference
-        if(width === 0) {
+        if (width === 0) {
             width = $('.content-primary').width();
-            height = width *0.5;
+            height = width * 0.5;
         }
     }
 
@@ -26,7 +26,6 @@ function initChart() {
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
         var svg = d3.select("svg");
-
 
         var simulation = d3.forceSimulation()
             .force("link", d3.forceLink().distance(250).strength(0.5))
@@ -128,6 +127,8 @@ function initChart() {
 
             /**
              *  Expose data from nodes
+             *  (1) simulate click on chart when user clicks on item list
+             *  (2) add and remove mouseover event
              */
 
             function exposeSiblingNodes(nodes) {
@@ -147,6 +148,16 @@ function initChart() {
                     imgNode.onclick = function () {
                         simulateClick(contains('title', node.id)[0].parentNode);
                     };
+                    imgNode.addEventListener("mouseover", function () {
+                        var tempNode = contains('title', node.id)[0].parentNode;
+                        var tempD3Node = d3.select(tempNode);
+                            tempD3Node.classed("active", true);
+                    });
+                    imgNode.addEventListener("mouseout", function () {
+                        var tempNode = contains('title', node.id)[0].parentNode;
+                        d3.select(tempNode).classed("active", false);
+                    });
+
                     listElementNode.appendChild(imgNode);
                     listNode.appendChild(listElementNode);
                 })
