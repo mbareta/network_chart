@@ -51,16 +51,16 @@ function initChart() {
                 bilinks.push([s, i, t]);
             });
 
-            var tip = d3.tip()
-            .attr('class', 'tooltip')
-            .html(function (d) {
-                return "<strong>Name:</strong> <span style='color:red'>" + d.id + "</span>";
-            });
+            var formatTime = d3.time.format("%e %B");
+            var div = d3.select("body").append("div")
+                .attr("class", "d3-tooltip")
+                .style("opacity", 0);
 
             var link = svg.selectAll(".link")
                 .data(bilinks)
                 .enter().append("path")
                 .attr("class", "link");
+
 
             var node = svg.selectAll(".node")
                 .data(nodes.filter(function (d) {
@@ -75,9 +75,19 @@ function initChart() {
                     exposeSiblingNodes(data.nodes);
                     getInfoForSelectedNode(selected_node);
                 })
-                .call(tip)
-                .on('mouseover', tip.show)
-                .on('mouseout', tip.hide)
+                .on("mouseover", function (d) {
+                    div.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    div.html("<p>test</p>")
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                })
+                .on("mouseout", function (d) {
+                    div.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                })
                 // .call -> Invokes the specified function exactly once, passing in this selection
                 // along with any optional arguments. Returns this selection.
                 .call(d3.drag()
@@ -93,10 +103,10 @@ function initChart() {
 
             $dataInfo.width(newWidth).height(newHeight);
 
-           /* node.append("title")
-                .text(function (d) {
-                    return d.id;
-                });*/
+            /* node.append("title")
+             .text(function (d) {
+             return d.id;
+             });*/
 
             simulation
                 .nodes(nodes)
