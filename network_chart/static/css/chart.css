@@ -5,12 +5,12 @@ html, body, p {
     font-family: sans;
 }
 
-.xblock-render .main-container {
+.xblock-render .network-chart-main-container {
     position: relative !important;
     overflow: hidden;
 }
 
-.main-container {
+.network-chart-main-container {
     background-color: #a74520;
     position: fixed;
     top: 0;
@@ -122,4 +122,12 @@ html, body, p {
 
 .text-info p {
     padding: 2px 0;
+}
+
+/**
+*   Tooltip styling for nodes
+ */
+
+div.data-node-tooltip {
+  position: absolute;
 }

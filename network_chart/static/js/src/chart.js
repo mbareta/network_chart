@@ -15,9 +15,9 @@ function initChart() {
 
         // in this case, the chart is rendering in studio, so we'll take
         // first known container's width as a reference
-        if(width === 0) {
+        if (width === 0) {
             width = $('.content-primary').width();
-            height = width *0.5;
+            height = width * 0.5;
         }
     }
 
@@ -26,7 +26,6 @@ function initChart() {
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
         var svg = d3.select("svg");
-
 
         var simulation = d3.forceSimulation()
             .force("link", d3.forceLink().distance(250).strength(0.5))
@@ -52,6 +51,12 @@ function initChart() {
                 bilinks.push([s, i, t]);
             });
 
+            var div = d3.select(".network-chart-main-container").append("div")
+                .attr("class", "data-node-tooltip")
+                .style("opacity", 0);
+            var existing_node_class = null;
+            var new_node_class = null;
+
             var link = svg.selectAll(".link")
                 .data(bilinks)
                 .enter().append("path")
@@ -70,6 +75,8 @@ function initChart() {
                     exposeSiblingNodes(data.nodes);
                     getInfoForSelectedNode(selected_node);
                 })
+                .on("mouseover", handleMouseOverNode)
+                .on("mouseout", handleMouseOutNode)
                 // .call -> Invokes the specified function exactly once, passing in this selection
                 // along with any optional arguments. Returns this selection.
                 .call(d3.drag()
@@ -82,12 +89,8 @@ function initChart() {
             var newWidth = width / 8;
             var newHeight = newWidth / ratio;
 
-            $dataInfo.width(newWidth).height(newHeight);
 
-            node.append("title")
-                .text(function (d) {
-                    return d.id;
-                });
+            $dataInfo.width(newWidth).height(newHeight);
 
             simulation
                 .nodes(nodes)
@@ -100,6 +103,30 @@ function initChart() {
             function ticked() {
                 link.attr("d", positionLink);
                 node.attr("transform", positionNode);
+            }
+
+            /**
+             *  Mouseover and mouse out events
+             */
+
+            function handleMouseOverNode(d) {
+                console.log("d", d);
+                div.transition()
+                    .duration(200)
+                    .style("opacity", 1);
+                div.attr("data-node-tooltip", d.id)
+                    .style("left", d.x + "px")
+                    .style("top", (d.y - 22) + "px");
+                existing_node_class = d3.select(this).attr("class");
+                new_node_class = existing_node_class + " active";
+                d3.select(this).attr("class", new_node_class);
+            }
+
+            function handleMouseOutNode() {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                d3.select(this).attr("class", existing_node_class)
             }
 
             /**
@@ -128,6 +155,9 @@ function initChart() {
 
             /**
              *  Expose data from nodes
+             *  (1) simulate click on chart when user clicks on item list
+             *  (2) simulate hover on chart when user hovers list item
+             *  (3) add and remove mouseover event
              */
 
             function exposeSiblingNodes(nodes) {
@@ -147,6 +177,18 @@ function initChart() {
                     imgNode.onclick = function () {
                         simulateClick(contains('title', node.id)[0].parentNode);
                     };
+                    imgNode.addEventListener("mouseover", function () {
+                        var tempNode = contains('title', node.id)[0].parentNode;
+                        var tempD3Node = d3.select(tempNode);
+                        tempD3Node.classed("active", true);
+                        handleMouseOverNode(node);
+                    });
+                    imgNode.addEventListener("mouseout", function () {
+                        var tempNode = contains('title', node.id)[0].parentNode;
+                        d3.select(tempNode).classed("active", false);
+                        handleMouseOutNode();
+                    });
+
                     listElementNode.appendChild(imgNode);
                     listNode.appendChild(listElementNode);
                 })
@@ -302,4 +344,3 @@ function initChart() {
     getDimensions();
     createGraph();
 }
-
