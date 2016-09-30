@@ -110,7 +110,6 @@ function initChart() {
              */
 
             function handleMouseOverNode(d) {
-                console.log("d", d);
                 div.transition()
                     .duration(200)
                     .style("opacity", 1);
