@@ -1,4 +1,4 @@
-# network_chart
-TODO:
-- ability to upload JSON file
-- add more features (hover effect, more data, tooltips on data points)
+# Network chart
+
+- upload JSON file for data
+
