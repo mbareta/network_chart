@@ -34,7 +34,6 @@ class NetworkChartXBlock(XBlock):
         frag.add_css(self.resource_string("static/css/chart.css"))
         frag.add_css(self.resource_string("static/css/tooltip.css"))
         frag.add_javascript(self.resource_string("static/js/src/d3.v4.js"))
-        frag.add_javascript(self.resource_string("static/js/src/d3_tip.js"))
         frag.add_javascript(self.resource_string("static/js/src/chart.js"))
         frag.initialize_js('initChart')
         return frag

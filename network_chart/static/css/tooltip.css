@@ -11,9 +11,7 @@
 
 /* Base styles for the entire tooltip */
 [data-mit_tooltip]:before,
-[data-mit_tooltip]:after,
-.tooltip:before,
-.tooltip:after {
+[data-mit_tooltip]:after {
   position: absolute;
   visibility: hidden;
   opacity: 0;
@@ -25,22 +23,33 @@
   pointer-events: none;
 }
 
+.data-node-tooltip:before,
+.data-node-tooltip:after {
+    position: absolute;
+    transition:
+      opacity 0.2s ease-in-out,
+      visibility 0.2s ease-in-out,
+      transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+    transform: translate3d(0, 0, 0);
+    pointer-events: none;
+}
+
 /* Show the entire tooltip on hover and focus */
 [data-mit_tooltip]:hover:before,
 [data-mit_tooltip]:hover:after,
 [data-mit_tooltip]:focus:before,
 [data-mit_tooltip]:focus:after,
-.tooltip:hover:before,
-.tooltip:hover:after,
-.tooltip:focus:before,
-.tooltip:focus:after {
+.data-node-tooltip:hover:before,
+.data-node-tooltip:hover:after,
+.data-node-tooltip:focus:before,
+.data-node-tooltip:hover:after {
   visibility: visible;
   opacity: 1;
 }
 
 /* Base styles for the tooltip's directional arrow */
-.tooltip:before,
-[data-mit_tooltip]:before {
+[data-mit_tooltip]:before,
+.data-node-tooltip:before {
   z-index: 1001;
   border: 6px solid transparent;
   background: transparent;
@@ -48,7 +57,6 @@
 }
 
 /* Base styles for the tooltip's content area */
-.tooltip:after,
 [data-mit_tooltip]:after {
   z-index: 1000;
   padding: 10px;
@@ -62,22 +70,32 @@
   text-align: center;
 }
 
+.data-node-tooltip:after {
+  z-index: 1000;
+  padding: 10px;
+  width: 100px;
+  background-color: #da7049;
+  color: #fff;
+  content: attr(data-node-tooltip);
+  font-size: 14px;
+  font-family: sans;
+  line-height: 1.2;
+  text-align: center;
+}
+
 /* Directions */
 
 /* Top (default) */
 [data-mit_tooltip]:before,
 [data-mit_tooltip]:after,
-.tooltip:before,
-.tooltip:after,
-.tooltip-top:before,
-.tooltip-top:after {
+.data-node-tooltip:before,
+.data-node-tooltip:after {
   bottom: 100%;
   left: 50%;
 }
 
 [data-mit_tooltip]:before,
-.tooltip:before,
-.tooltip-top:before {
+.data-node-tooltip:before {
   margin-left: -6px;
   margin-bottom: -12px;
   border-top-color: #da7049;
@@ -85,8 +103,7 @@
 
 /* Horizontally align top/bottom tooltips */
 [data-mit_tooltip]:after,
-.tooltip:after,
-.tooltip-top:after {
+.data-node-tooltip:after {
   margin-left: -60px;
 }
 
@@ -94,14 +111,10 @@
 [data-mit_tooltip]:hover:after,
 [data-mit_tooltip]:focus:before,
 [data-mit_tooltip]:focus:after,
-.tooltip:hover:before,
-.tooltip:hover:after,
-.tooltip:focus:before,
-.tooltip:focus:after,
-.tooltip-top:hover:before,
-.tooltip-top:hover:after,
-.tooltip-top:focus:before,
-.tooltip-top:focus:after {
+.data-node-tooltip:hover:before,
+.data-node-tooltip:hover:after,
+.data-node-tooltip:focus:before,
+.data-node-tooltip:focus:after {
   transform: translateY(-12px);
 }
 
