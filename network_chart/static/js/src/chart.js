@@ -51,11 +51,9 @@ function initChart() {
                 bilinks.push([s, i, t]);
             });
 
-            var div = d3.select(".network-chart-main-container").append("div")
+            var divTooltip = d3.select(".network-chart-main-container").append("div")
                 .attr("class", "data-node-tooltip")
                 .style("opacity", 0);
-            var existing_node_class = null;
-            var new_node_class = null;
 
             var link = svg.selectAll(".link")
                 .data(bilinks)
@@ -69,12 +67,10 @@ function initChart() {
                 .enter().append("circle")
                 .attr("class", "node")
                 .attr("r", 10)
-                .on("click", function (selected_node) {
-                    var data = getNearLinksAndNodes(selected_node);
-                    highlightElements(data, selected_node);
-                    exposeSiblingNodes(data.nodes);
-                    getInfoForSelectedNode(selected_node);
+                .attr("id", function (d) {
+                    return d.id
                 })
+                .on("click", handleMouseClickNode)
                 .on("mouseover", handleMouseOverNode)
                 .on("mouseout", handleMouseOutNode)
                 // .call -> Invokes the specified function exactly once, passing in this selection
@@ -106,26 +102,40 @@ function initChart() {
             }
 
             /**
-             *  Mouseover and mouse out events
+             *  Mouseover, mouseout and onclick events
              */
 
-            function handleMouseOverNode(d) {
-                div.transition()
-                    .duration(200)
-                    .style("opacity", 1);
-                div.attr("data-node-tooltip", d.id)
-                    .style("left", d.x + "px")
-                    .style("top", (d.y - 22) + "px");
-                existing_node_class = d3.select(this).attr("class");
-                new_node_class = existing_node_class + " active";
-                d3.select(this).attr("class", new_node_class);
+            function handleMouseClickNode(d) {
+                var data = getNearLinksAndNodes(d);
+                highlightElements(data, d);
+                exposeSiblingNodes(data.nodes);
+                getInfoForSelectedNode(d);
             }
 
-            function handleMouseOutNode() {
-                div.transition()
+            var existing_class = null;
+
+            function handleMouseOverNode(d) {
+                divTooltip.transition()
+                    .duration(200)
+                    .style("opacity", 1);
+                divTooltip.attr("data-node-tooltip", d.id)
+                    .style("left", d.x + "px")
+                    .style("top", (d.y - 22) + "px");
+
+                var d3Node = d3.select("#" + d.id);
+                existing_class = d3Node.attr("class");
+                d3Node.classed("active", true);
+            }
+
+            function handleMouseOutNode(d) {
+                divTooltip.transition()
                     .duration(500)
                     .style("opacity", 0);
-                d3.select(this).attr("class", existing_node_class)
+                var d3Node = d3.select("#" + d.id);
+                var temp = d3Node.attr("class");
+                if (!(temp.indexOf("clicked") !== -1 )) {
+                    d3Node.attr("class", existing_class);
+                }
             }
 
             /**
@@ -174,18 +184,13 @@ function initChart() {
                     var imgNode = d.createElement('img');
                     imgNode.src = node.img_url;
                     imgNode.onclick = function () {
-                        simulateClick(contains('title', node.id)[0].parentNode);
+                        handleMouseClickNode(node);
                     };
                     imgNode.addEventListener("mouseover", function () {
-                        var tempNode = contains('title', node.id)[0].parentNode;
-                        var tempD3Node = d3.select(tempNode);
-                        tempD3Node.classed("active", true);
                         handleMouseOverNode(node);
                     });
                     imgNode.addEventListener("mouseout", function () {
-                        var tempNode = contains('title', node.id)[0].parentNode;
-                        d3.select(tempNode).classed("active", false);
-                        handleMouseOutNode();
+                        handleMouseOutNode(node);
                     });
 
                     listElementNode.appendChild(imgNode);
@@ -228,40 +233,6 @@ function initChart() {
         }
 
         /**
-         *  Helpers
-         */
-        // Check if DOM element contains text
-        function contains(selector, text) {
-            var elements = document.querySelectorAll(selector);
-            return [].filter.call(elements, function (element) {
-                return new RegExp(text).test(element.textContent);
-            });
-        }
-
-        // Simulate click on DOM element
-        function simulateClick(elem /* Must be the element, not d3 selection */) {
-            var evt = document.createEvent("MouseEvents");
-            evt.initMouseEvent(
-                "click", /* type */
-                true, /* canBubble */
-                true, /* cancelable */
-                window, /* view */
-                0, /* detail */
-                0, /* screenX */
-                0, /* screenY */
-                0, /* clientX */
-                0, /* clientY */
-                false, /* ctrlKey */
-                false, /* altKey */
-                false, /* shiftKey */
-                false, /* metaKey */
-                0, /* button */
-                null);
-            /* relatedTarget */
-            elem.dispatchEvent(evt);
-        }
-
-        /**
          *  Function receives data (links and nodes) and selected node.
          *  Every node will be set as inactive except for the selected one.
          *  The same is with links.
@@ -283,11 +254,14 @@ function initChart() {
                 var svgNode = d3.select(this);
                 svgNode.classed("inactive", true);
                 svgNode.classed("active", false);
+                svgNode.classed("clicked", false);
+
                 data.nodes.forEach(function (el) {
                     if (el.id === node.id) {
                         svgNode.classed("inactive", false);
                     } else if (selected_node.id === node.id) {
                         svgNode.classed("active", true);
+                        svgNode.classed("clicked", true);
                     }
                 })
 
