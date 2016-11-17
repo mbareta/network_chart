@@ -1,11 +1,14 @@
-function initChart() {
+function initChart(runtime, element) {
+
+    const central_node = 'KC';
+    var $element = $(element);
     var width,
         height,
         ratio = 0.78, // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
         throttled = false,
         delay = 250;
 
-    var $chart = $("#chart");
+    var $chart = $element.find("#chart");
 
     function getDimensions() {
         var chart = document.getElementById("chart");
@@ -16,7 +19,7 @@ function initChart() {
         // in this case, the chart is rendering in studio, so we'll take
         // first known container's width as a reference
         if (width === 0) {
-            width = $('.content-primary').width();
+            width = $element.parents('.content-primary').width();
             height = width * 0.5;
         }
     }
@@ -28,9 +31,18 @@ function initChart() {
         var svg = d3.select("svg");
 
         var simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().distance(250).strength(0.5))
+            .force("link", d3.forceLink().distance(function (d) {
+                var source_id = d.source.id,
+                    target_id = d.target.id;
+                if (source_id === central_node || target_id === central_node) {
+                    return 150;
+                } else if (source_id !== central_node && target_id !== central_node) {
+                    return 60;
+                }
+            }).strength(0.5))
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
+
 
         d3.json(document.jsonUrl, function (error, graph) {
             if (error) throw new error;
@@ -40,15 +52,22 @@ function initChart() {
                     return d.id;
                 }),
                 links = graph.links,
-                bilinks = [];
+                bilinks = [],
+                mainBilinks = [];
 
             links.forEach(function (link) {
                 var s = link.source = nodeById.get(link.source),
                     t = link.target = nodeById.get(link.target),
+                    v = link.value,
                     i = {}; // intermediate node
+
                 nodes.push(i);
+                if (s.id === central_node || t.id === central_node) {
+                    mainBilinks.push([s, i, t]);
+                } else {
+                    bilinks.push([s, i, t]);
+                }
                 links.push({source: s, target: i}, {source: i, target: t});
-                bilinks.push([s, i, t]);
             });
 
             var divTooltip = d3.select(".network-chart-main-container").append("div")
@@ -59,6 +78,11 @@ function initChart() {
                 .data(bilinks)
                 .enter().append("path")
                 .attr("class", "link");
+
+            var mainLink = svg.selectAll(".mainLink")
+                .data(mainBilinks)
+                .enter().append("path")
+                .attr("class", "link test");
 
             var node = svg.selectAll(".node")
                 .data(nodes.filter(function (d) {
@@ -85,7 +109,6 @@ function initChart() {
             var newWidth = width / 8;
             var newHeight = newWidth / ratio;
 
-
             $dataInfo.width(newWidth).height(newHeight);
 
             simulation
@@ -98,6 +121,7 @@ function initChart() {
 
             function ticked() {
                 link.attr("d", positionLink);
+                mainLink.attr('d', straightLink);
                 node.attr("transform", positionNode);
             }
 
@@ -201,12 +225,18 @@ function initChart() {
         });
 
         /**
-         * Functions which take care of dragging the graph nodes
+         * Functions which take care of dragging and positioning the graph nodes and links
          */
 
         function positionLink(d) {
             return "M" + d[0].x + "," + d[0].y
                 + "S" + d[1].x + "," + d[1].y
+                + " " + d[2].x + "," + d[2].y;
+        }
+
+        function straightLink(d) {
+            return "M" + d[0].x + "," + d[0].y
+                + "S" + (d[0].x + d[2].x) / 2 + "," + (d[0].y + d[2].y) / 2.5
                 + " " + d[2].x + "," + d[2].y;
         }
 
