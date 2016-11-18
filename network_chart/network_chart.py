@@ -5,9 +5,11 @@ import pkg_resources
 from xblock.core import XBlock
 from xblock.fields import Scope, String
 from xblock.fragment import Fragment
+from xblock_django.mixins import FileUploadMixin
+from webob.response import Response
 
 
-class NetworkChartXBlock(XBlock):
+class NetworkChartXBlock(XBlock, FileUploadMixin):
     """
     TO-DO: document what your XBlock does.
     """
@@ -59,17 +61,23 @@ class NetworkChartXBlock(XBlock):
         frag.initialize_js('StudioEdit')
         return frag
 
-    @XBlock.json_handler
-    def studio_submit(self, data, suffix=''):
+    @XBlock.handler
+    def studio_submit(self, request, suffix=''):
         """
         Called when submitting the form in Studio.
         """
+        data = request.POST
+
         self.display_name = data.get('display_name')
         self.json_url = data.get('json_url')
         self.display_description = data.get('display_description')
-        self.thumbnail_url = data.get('thumbnail_url')
 
-        return {'result': 'success'}
+        block_id = data['usage_id']
+        if not isinstance(data['thumbnail'], basestring):
+            upload = data['thumbnail']
+            self.thumbnail_url = self.upload_to_s3('THUMBNAIL', upload.file, block_id, self.thumbnail_url)
+
+        return Response(json_body={'result': 'success'})
 
     # TO-DO: change this to create the scenarios you'd like to see in the
     # workbench while developing your XBlock.
