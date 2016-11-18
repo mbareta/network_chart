@@ -11,7 +11,8 @@ html, body, p {
 }
 
 .network-chart-main-container {
-    background-color: #a74520;
+    background: url('https://s3.amazonaws.com/mit-cre/XBlocks/network-chart/imgpsh_fullsize.jpeg');
+    background-size: cover;
     position: fixed;
     top: 0;
     left: 0;
@@ -24,8 +25,8 @@ html, body, p {
 }
 
 .node {
-    fill: #a74520;
-    stroke: #fdfdfd;
+    fill: #592316;
+    stroke: #fff;
     stroke-width: 1px;
 }
 
@@ -40,10 +41,15 @@ html, body, p {
 .link {
     fill: none;
     stroke: #fdfdfd;
+    stroke-width: 1.5px;
 }
 
 .inactive {
-    stroke: #cb653c;
+    stroke: #f2c1ae;
+
+}
+path.inactive{
+    opacity:0.5;
 }
 
 #chart, svg {

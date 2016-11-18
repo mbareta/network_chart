@@ -1,3 +1,5 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
 var utils = require('./utils.js');
 
 global.initChart = function (runtime, element) {
@@ -358,3 +360,30 @@ global.initChart = function (runtime, element) {
     height = dimensions.height;
     createGraph();
 };
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./utils.js":2}],2:[function(require,module,exports){
+'use strict';
+
+function getDimensions($element) {
+    var chart = $element.find('.network-chart-main-container')[0];
+    var width = chart.offsetWidth,
+      height = chart.offsetHeight;
+
+    // in this case, the chart is rendering in studio, so we'll take
+    // first known container's width as a reference
+    if (width === 0) {
+        width = $element.parents('.content-primary').width;
+        height = width * 0.5;
+    }
+
+    return {
+        width: width,
+        height: height
+    }
+}
+
+module.exports = {
+    getDimensions: getDimensions
+}
+},{}]},{},[1]);
