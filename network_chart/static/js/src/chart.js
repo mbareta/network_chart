@@ -1,28 +1,17 @@
-function initChart(runtime, element) {
+var utils = require('./utils.js');
 
+global.initChart = function (runtime, element) {
     const central_node = 'KC';
     var $element = $(element);
-    var width,
-        height,
+    var dimensions = utils.getDimensions($element);
+
+    var width = dimensions.width,
+        height = dimensions.height,
         ratio = 0.78, // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
         throttled = false,
         delay = 250;
 
     var $chart = $element.find("#chart");
-
-    function getDimensions() {
-        var chart = document.getElementById("chart");
-        var chart_parent = chart.parentElement;
-        width = chart_parent.offsetWidth;
-        height = chart_parent.offsetHeight;
-
-        // in this case, the chart is rendering in studio, so we'll take
-        // first known container's width as a reference
-        if (width === 0) {
-            width = $element.parents('.content-primary').width();
-            height = width * 0.5;
-        }
-    }
 
     function createGraph() {
         var chart = document.getElementById("chart");
@@ -31,15 +20,7 @@ function initChart(runtime, element) {
         var svg = d3.select("svg");
 
         var simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().distance(function (d) {
-                var source_id = d.source.id,
-                    target_id = d.target.id;
-                if (source_id === central_node || target_id === central_node) {
-                    return 150;
-                } else if (source_id !== central_node && target_id !== central_node) {
-                    return 60;
-                }
-            }).strength(0.5))
+            .force("link", d3.forceLink().distance(setDistance).strength(setStrength))
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -58,7 +39,6 @@ function initChart(runtime, element) {
             links.forEach(function (link) {
                 var s = link.source = nodeById.get(link.source),
                     t = link.target = nodeById.get(link.target),
-                    v = link.value,
                     i = {}; // intermediate node
 
                 nodes.push(i);
@@ -82,7 +62,7 @@ function initChart(runtime, element) {
             var mainLink = svg.selectAll(".mainLink")
                 .data(mainBilinks)
                 .enter().append("path")
-                .attr("class", "link test");
+                .attr("class", "link");
 
             var node = svg.selectAll(".node")
                 .data(nodes.filter(function (d) {
@@ -94,7 +74,9 @@ function initChart(runtime, element) {
                 .attr("id", function (d) {
                     return d.id
                 })
-                .on("click", handleMouseClickNode)
+                .on("click", function (d) {
+                    return handleMouseClickNode(d)
+                })
                 .on("mouseover", handleMouseOverNode)
                 .on("mouseout", handleMouseOutNode)
                 // .call -> Invokes the specified function exactly once, passing in this selection
@@ -102,7 +84,8 @@ function initChart(runtime, element) {
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
-                    .on("end", dragended));
+                    .on("end", dragended)
+                );
 
             // set width and height for dataInfo container
             var $dataInfo = $("#dataInfo");
@@ -124,6 +107,7 @@ function initChart(runtime, element) {
                 mainLink.attr('d', straightLink);
                 node.attr("transform", positionNode);
             }
+
 
             /**
              *  Mouseover, mouseout and onclick events
@@ -222,7 +206,30 @@ function initChart(runtime, element) {
                 })
             }
 
+
         });
+
+        function setDistance(d) {
+            var source_id = d.source.id,
+                target_id = d.target.id;
+            if (source_id === central_node) {
+                return 150;
+            } else if (target_id === central_node) {
+                return 90;
+            } else {
+                return 55;
+            }
+        }
+
+        function setStrength(d) {
+            var source_id = d.source.id,
+                target_id = d.target.id;
+            if (source_id === central_node || target_id === central_node) {
+                return 0.1;
+            } else {
+                return 0.25;
+            }
+        }
 
         /**
          * Functions which take care of dragging and positioning the graph nodes and links
@@ -236,7 +243,7 @@ function initChart(runtime, element) {
 
         function straightLink(d) {
             return "M" + d[0].x + "," + d[0].y
-                + "S" + (d[0].x + d[2].x) / 2 + "," + (d[0].y + d[2].y) / 2.5
+                + "S" + (d[0].x + d[2].x) / 2 + "," + (d[0].y + d[2].y) / 2.1
                 + " " + d[2].x + "," + d[2].y;
         }
 
@@ -331,19 +338,23 @@ function initChart(runtime, element) {
         // only run if we're not throttled
         if (!throttled) {
             // actual callback action
-            getDimensions();
+            dimensions = utils.getDimensions($element);
+            width = dimensions.width;
+            height = dimensions.height;
             createGraph();
+
             // we're throttled!
             throttled = true;
             // set a timeout to un-throttle
             setTimeout(function () {
                 throttled = false;
-                getDimensions();
                 createGraph();
             }, delay);
         }
     });
 
-    getDimensions();
+    dimensions = utils.getDimensions($element);
+    width = dimensions.width;
+    height = dimensions.height;
     createGraph();
-}
+};

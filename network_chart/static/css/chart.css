@@ -44,13 +44,6 @@ html, body, p {
     stroke-width: 1.5px;
 }
 
-.link.test {
-    fill: none;
-    stroke: red;
-    stroke-width: 2px;
-}
-
-
 .inactive {
     stroke: #f2c1ae;
 
