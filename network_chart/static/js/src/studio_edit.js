@@ -1,16 +1,28 @@
 function StudioEdit(runtime, element) {
 
     var $element = $(element);
+
     $element.find('.save-button').bind('click', function () {
         var handlerUrl = runtime.handlerUrl(element, 'studio_submit');
-        var data = {
-            display_name: $element.find('input[name=display_name]').val(),
-            json_url: $element.find('input[name=json_url]').val(),
-            thumbnail_url: $element.find('input[name=thumbnail_url]').val(),
-            display_description: $element.find('input[name=display_description]').val()
-        };
+
+        var data = new FormData();
+        data.append('usage_id', $element.data('usage-id'));
+        data.append('display_name', $element.find('input[name=display_name]').val());
+        data.append('json_url', $element.find('input[name=json_url]').val());
+        data.append('display_description', $element.find('input[name=display_description]').val());
+        data.append('thumbnail', $element.find('input[name=thumbnail]')[0].files[0]);
+
         runtime.notify('save', {state: 'start'});
-        $.post(handlerUrl, JSON.stringify(data)).done(function (response) {
+
+        $.ajax({
+            url: handlerUrl,
+            type: 'POST',
+            data: data,
+            cache: false,
+            dataType: 'json',
+            processData: false,
+            contentType: false
+        }).done(function (response) {
             runtime.notify('save', {state: 'end'});
         });
     });
