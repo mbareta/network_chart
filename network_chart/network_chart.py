@@ -45,7 +45,6 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
         frag.add_css(self.resource_string("static/css/tooltip.css"))
         frag.add_javascript(self.resource_string("static/js/src/d3.v4.js"))
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/dist/bundle.js'))
-        print "current json data: ", self.json_data
         frag.initialize_js('initChart', {
                 'json_data': self.json_data
         })
@@ -75,7 +74,6 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
         data = request.POST
 
         self.display_name = data.get('display_name')
-        # self.json_url = data.get('json_url')
         self.display_description = data.get('display_description')
 
         block_id = data['usage_id']
@@ -90,8 +88,6 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
             opener = urllib2.build_opener()
             f = opener.open(req)
             _json = json.loads(f.read())
-            print "*"*50, json.dumps(_json)
-            print "spremljeni json data"
             self.json_data = json.dumps(_json)
 
         return Response(json_body={'result': 'success'})

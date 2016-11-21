@@ -5,10 +5,11 @@ function getDimensions($element) {
     var width = chart.offsetWidth,
       height = chart.offsetHeight;
 
+    debugger;
     // in this case, the chart is rendering in studio, so we'll take
     // first known container's width as a reference
     if (width === 0) {
-        width = $element.parents('.content-primary').width;
+        width = $element.parents('.content-primary').width();
         height = width * 0.5;
     }
 

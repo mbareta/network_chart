@@ -32,10 +32,6 @@ global.initChart = function (runtime, element, data) {
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
 
-        //
-        //d3.j(chart_data, function (error, graph) {
-        //    if (error) throw new error;
-
         var nodes = chart_data['nodes'],
             nodeById = d3.map(nodes, function (d) {
                 return d.id;
@@ -44,10 +40,7 @@ global.initChart = function (runtime, element, data) {
             bilinks = [],
             mainBilinks = [];
 
-        //console.log("links: ", links);
-        // console.log("nodes: ", nodes);
         links.forEach(function (link) {
-            //console.log("link --------->", link);
             var s = link.source = nodeById.get(link.source),
                 t = link.target = nodeById.get(link.target),
                 i = {}; // intermediate node
@@ -75,7 +68,6 @@ global.initChart = function (runtime, element, data) {
             .enter().append("path")
             .attr("class", "link");
 
-        //console.log("main linK: ", mainLink);
         var node = svg.selectAll(".node")
             .data(nodes.filter(function (d) {
                 return d.id;
@@ -217,10 +209,6 @@ global.initChart = function (runtime, element, data) {
                 listNode.appendChild(listElementNode);
             })
         }
-
-        //
-        //
-        //});
 
         function setDistance(d) {
             var source_id = d.source.id,
@@ -366,8 +354,5 @@ global.initChart = function (runtime, element, data) {
         }
     });
 
-    //dimensions = utils.getDimensions($element);
-    //width = dimensions.width;
-    //height = dimensions.height;
     createGraph(chart_data);
 };
