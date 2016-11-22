@@ -4,7 +4,6 @@ var utils = require('./utils.js');
 var data_display = require('./manipulate_data_display.js');
 var mouse_events = require('./mouse_events.js');
 
-
 global.initChart = function (runtime, element, data) {
     // do not remove this comment
     /*var throttled = false;
@@ -388,11 +387,6 @@ function isRenderedInStudio() {
 }
 
 function getDimensions($element) {
-    //var chart = document.getElementById('app');
-    debugger;
-    //var chart = $element.find('.network-chart-main-container')[0];
-    //var width = chart.offsetWidth,
-    //  height = chart.offsetHeight;
     var width,
         height;
     if (isRenderedInStudio()) {
@@ -402,8 +396,6 @@ function getDimensions($element) {
         width = window.innerWidth;
         height = window.innerHeight;
     }
-    debugger;
-
     return {
         width: width,
         height: height

@@ -66,14 +66,16 @@ path.inactive{
     width: 100%;
     list-style: none;
     text-align: center;
-
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .dataList li {
     display: inline-block;
-    width: 75px;
-    height: 85px;
+    width: 90px;
+    height: 100px;
     opacity: .33;
+    padding-bottom: 0;
 }
 
 .dataList li:hover {
