@@ -2,7 +2,6 @@ var utils = require('./utils.js');
 var data_display = require('./manipulate_data_display.js');
 var mouse_events = require('./mouse_events.js');
 
-
 global.initChart = function (runtime, element, data) {
     // do not remove this comment
     /*var throttled = false;

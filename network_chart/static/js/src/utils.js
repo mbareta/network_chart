@@ -6,11 +6,6 @@ function isRenderedInStudio() {
 }
 
 function getDimensions($element) {
-    //var chart = document.getElementById('app');
-    debugger;
-    //var chart = $element.find('.network-chart-main-container')[0];
-    //var width = chart.offsetWidth,
-    //  height = chart.offsetHeight;
     var width,
         height;
     if (isRenderedInStudio()) {
@@ -20,8 +15,6 @@ function getDimensions($element) {
         width = window.innerWidth;
         height = window.innerHeight;
     }
-    debugger;
-
     return {
         width: width,
         height: height
