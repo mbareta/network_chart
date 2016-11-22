@@ -1,31 +1,32 @@
 var utils = require('./utils.js');
+var data_display = require('./manipulate_data_display.js');
+var mouse_events = require('./mouse_events.js');
+//var data_display = require('./manipulate_data_display.js');
+
 
 global.initChart = function (runtime, element, data) {
-    //console.log("json data: ", data['json_data']);
     var chart_data = JSON.parse(data['json_data']);
-    console.log("******************************************* nodes: ", chart_data['nodes']);
-    //console.log(chart_data.nodes);
-    //var _chart_data = JSON.parse(chart_data);
-    //console.log(_chart_data['nodes']);
-    //console.log(_chart_data.nodes);
-
     const central_node = 'KC';
     var $element = $(element);
-    var dimensions = utils.getDimensions($element);
+    if (!chart_data) {
+        var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
+        $element.find('.network-chart-main-container').html(note);
+    }
 
+    var dimensions = utils.getDimensions($element);
     var width = dimensions.width,
         height = dimensions.height,
         ratio = 0.78, // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
         throttled = false,
         delay = 250;
 
-    var $chart = $element.find("#chart");
+    var $chart = $element.find(".chart");
+
 
     function createGraph(chart_data) {
-        var chart = document.getElementById("chart");
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
-        var svg = d3.select("svg");
+        var svg = d3.select($element[0]).select('svg');
 
         var simulation = d3.forceSimulation()
             .force("link", d3.forceLink().distance(setDistance).strength(setStrength))
@@ -54,7 +55,7 @@ global.initChart = function (runtime, element, data) {
             links.push({source: s, target: i}, {source: i, target: t});
         });
 
-        var divTooltip = d3.select(".network-chart-main-container").append("div")
+        var divTooltip = d3.select($element[0]).select(".network-chart-main-container").append("div")
             .attr("class", "data-node-tooltip")
             .style("opacity", 0);
 
@@ -67,6 +68,7 @@ global.initChart = function (runtime, element, data) {
             .data(mainBilinks)
             .enter().append("path")
             .attr("class", "link");
+
 
         var node = svg.selectAll(".node")
             .data(nodes.filter(function (d) {
@@ -81,8 +83,12 @@ global.initChart = function (runtime, element, data) {
             .on("click", function (d) {
                 return handleMouseClickNode(d)
             })
-            .on("mouseover", handleMouseOverNode)
-            .on("mouseout", handleMouseOutNode)
+            .on("mouseover", function (d) {
+                return mouse_events.handleMouseOverNode(d, divTooltip, svg)
+            })
+            .on("mouseout", function (d) {
+                return mouse_events.handleMouseOutNode(d, divTooltip, svg)
+            })
             // .call -> Invokes the specified function exactly once, passing in this selection
             // along with any optional arguments. Returns this selection.
             .call(d3.drag()
@@ -92,7 +98,7 @@ global.initChart = function (runtime, element, data) {
             );
 
         // set width and height for dataInfo container
-        var $dataInfo = $("#dataInfo");
+        var $dataInfo = $element.find('.dataInfo');
         var newWidth = width / 8;
         var newHeight = newWidth / ratio;
 
@@ -118,60 +124,10 @@ global.initChart = function (runtime, element, data) {
          */
 
         function handleMouseClickNode(d) {
-            var data = getNearLinksAndNodes(d);
-            highlightElements(data, d);
+            var data = data_display.getNearLinksAndNodes(d, links);
+            data_display.highlightElements(data, d, svg);
+            data_display.getInfoForSelectedNode($element, d);
             exposeSiblingNodes(data.nodes);
-            getInfoForSelectedNode(d);
-        }
-
-        var existing_class = null;
-
-        function handleMouseOverNode(d) {
-            divTooltip.transition()
-                .duration(200)
-                .style("opacity", 1);
-            divTooltip.attr("data-node-tooltip", d.id)
-                .style("left", d.x + "px")
-                .style("top", (d.y - 22) + "px");
-
-            var d3Node = d3.select("#" + d.id);
-            existing_class = d3Node.attr("class");
-            d3Node.classed("active", true);
-        }
-
-        function handleMouseOutNode(d) {
-            divTooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-            var d3Node = d3.select("#" + d.id);
-            var temp = d3Node.attr("class");
-            if (!(temp.indexOf("clicked") !== -1 )) {
-                d3Node.attr("class", existing_class);
-            }
-        }
-
-        /**
-         *  Find first sibling nodes and highlight their links
-         */
-
-        function getNearLinksAndNodes(node) {
-            var nearLinks = [];
-            var nearNodes = [];
-
-            links.forEach(function (link) {
-                if (link.source.id === node.id && link.value) {
-                    nearLinks.push(link);
-                    nearNodes.push(link.target);
-                } else if (link.target.id === node.id && link.value) {
-                    nearLinks.push(link);
-                    nearNodes.push(link.source);
-                }
-            });
-
-            return {
-                nodes: nearNodes,
-                links: nearLinks
-            };
         }
 
         /**
@@ -179,18 +135,18 @@ global.initChart = function (runtime, element, data) {
          *  (1) simulate click on chart when user clicks on item list
          *  (2) simulate hover on chart when user hovers list item
          *  (3) add and remove mouseover event
-         */
+         **/
 
-        function exposeSiblingNodes(nodes) {
+        function exposeSiblingNodes(exposing_nodes) {
             var d = document;
-            var listNode = d.getElementById("dataList");
+            var listNode = $element.find('.dataList')[0];
 
             // clear existing list
             while (listNode.firstChild) {
                 listNode.removeChild(listNode.firstChild);
             }
 
-            nodes.forEach(function (node) {
+            exposing_nodes.forEach(function (node) {
                 var listElementNode = d.createElement("LI");
                 listElementNode.dataset.mit_tooltip = node.id;
                 var imgNode = d.createElement('img');
@@ -199,10 +155,10 @@ global.initChart = function (runtime, element, data) {
                     handleMouseClickNode(node);
                 };
                 imgNode.addEventListener("mouseover", function () {
-                    handleMouseOverNode(node);
+                    mouse_events.handleMouseOverNode(node);
                 });
                 imgNode.addEventListener("mouseout", function () {
-                    handleMouseOutNode(node);
+                    mouse_events.handleMouseOutNode(node);
                 });
 
                 listElementNode.appendChild(imgNode);
@@ -270,70 +226,8 @@ global.initChart = function (runtime, element, data) {
             d.fy = null;
         }
 
-        /**
-         *  Function receives data (links and nodes) and selected node.
-         *  Every node will be set as inactive except for the selected one.
-         *  The same is with links.
-         */
-
-        function highlightElements(data, selected_node) {
-            d3.selectAll(".link").each(function (link) {
-                var svgLink = d3.select(this);
-                svgLink.classed("inactive", true);
-                data.links.forEach(function (el) {
-                    if (el.source.id === link[0].id && el.target.id === link[2].id) {
-                        svgLink.classed("inactive", false);
-                    }
-                })
-
-            });
-
-            d3.selectAll(".node").each(function (node) {
-                var svgNode = d3.select(this);
-                svgNode.classed("inactive", true);
-                svgNode.classed("active", false);
-                svgNode.classed("clicked", false);
-
-                data.nodes.forEach(function (el) {
-                    if (el.id === node.id) {
-                        svgNode.classed("inactive", false);
-                    } else if (selected_node.id === node.id) {
-                        svgNode.classed("active", true);
-                        svgNode.classed("clicked", true);
-                    }
-                })
-
-            });
-        }
-
-
-        /**
-         *  Get info about selected node
-         */
-
-        function getInfoForSelectedNode(node) {
-            var d = document;
-            var infoContainer = d.getElementById("dataInfo");
-
-            infoContainer.className = "active";
-            infoContainer.innerHTML = "";
-            // info text
-            var textNode = d.createElement("div");
-            textNode.className = "text-info";
-            var textElement = d.createTextNode(node.id);
-            textNode.appendChild(textElement);
-            // image
-            var imgNode = d.createElement("img");
-            imgNode.setAttribute("src", node.img_url);
-            // overlay
-            var overlayElement = d.createElement("div");
-            overlayElement.className = "data-info-overlay";
-
-            infoContainer.appendChild(imgNode);
-            infoContainer.appendChild(textNode);
-            infoContainer.appendChild(overlayElement);
-        }
     }
+
 
     window.addEventListener('resize', function () {
         // only run if we're not throttled
@@ -354,5 +248,8 @@ global.initChart = function (runtime, element, data) {
         }
     });
 
+    dimensions = utils.getDimensions($element);
+    width = dimensions.width;
+    height = dimensions.height;
     createGraph(chart_data);
 };
