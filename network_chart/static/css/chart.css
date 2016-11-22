@@ -45,11 +45,11 @@ html, body, p {
 }
 
 .inactive {
-    stroke: #f2c1ae;
+    stroke: #954D35;
 
 }
 path.inactive{
-    opacity:0.5;
+    stroke: #954D35;
 }
 
 .chart, svg {
@@ -73,7 +73,7 @@ path.inactive{
     display: inline-block;
     width: 75px;
     height: 85px;
-    opacity: .5;
+    opacity: .33;
 }
 
 .dataList li:hover {

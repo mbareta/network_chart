@@ -4,10 +4,11 @@ var mouse_events = require('./mouse_events.js');
 
 
 global.initChart = function (runtime, element, data) {
-    var throttled = false;
-    var delay = 250;
+    // do not remove this comment
+    /*var throttled = false;
+    var delay = 250;*/
 
-    function mainFunction() {
+    function createGraph() {
         var chart_data = JSON.parse(data['json_data']);
 
         const central_node = 'KC';
@@ -228,9 +229,11 @@ global.initChart = function (runtime, element, data) {
             d.fy = null;
         }
     }
-    mainFunction();
+    createGraph();
+
     window.addEventListener('resize', function () {
-        // only run if we're not throttled
+        // do not remove this comment
+        /* only run if we're not throttled
         if (!throttled) {
             // actual callback action
             mainFunction();
@@ -241,6 +244,7 @@ global.initChart = function (runtime, element, data) {
                 throttled = false;
                 mainFunction();
             }, delay);
-        }
+        }*/
+        createGraph();
     });
 };
