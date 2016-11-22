@@ -1,215 +1,174 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var utils = require('./utils.js');
+var data_display = require('./manipulate_data_display.js');
+var mouse_events = require('./mouse_events.js');
 
-global.initChart = function (runtime, element) {
-    const central_node = 'KC';
-    var $element = $(element);
-    var dimensions = utils.getDimensions($element);
-
-    var width = dimensions.width,
-        height = dimensions.height,
-        ratio = 0.78, // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
-        throttled = false,
-        delay = 250;
-
-    var $chart = $element.find("#chart");
+global.initChart = function (runtime, element, data) {
+    // do not remove this comment
+    /*var throttled = false;
+    var delay = 250;*/
 
     function createGraph() {
-        var chart = document.getElementById("chart");
+        var chart_data = JSON.parse(data['json_data']);
+
+        const central_node = 'KC';
+        var $element = $(element);
+        if (!chart_data) {
+            var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
+            $element.find('.network-chart-main-container').html(note);
+        }
+
+        var dimensions = utils.getDimensions($element);
+        var width = dimensions.width;
+        var height = dimensions.height;
+
+        var ratio = 0.78; // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
+
+        var $chart = $element.find(".chart");
+
+        //function createGraph() {
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
-        var svg = d3.select("svg");
+        var svg = d3.select($element[0]).select('svg');
 
         var simulation = d3.forceSimulation()
             .force("link", d3.forceLink().distance(setDistance).strength(setStrength))
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
 
+        var nodes = chart_data['nodes'],
+            nodeById = d3.map(nodes, function (d) {
+                return d.id;
+            }),
+            links = chart_data['links'],
+            bilinks = [],
+            mainBilinks = [];
 
-        d3.json(document.jsonUrl, function (error, graph) {
-            if (error) throw new error;
+        links.forEach(function (link) {
+            var s = link.source = nodeById.get(link.source),
+                t = link.target = nodeById.get(link.target),
+                i = {}; // intermediate node
 
-            var nodes = graph.nodes,
-                nodeById = d3.map(nodes, function (d) {
-                    return d.id;
-                }),
-                links = graph.links,
-                bilinks = [],
-                mainBilinks = [];
+            nodes.push(i);
+            if (s.id === central_node || t.id === central_node) {
+                mainBilinks.push([s, i, t]);
+            } else {
+                bilinks.push([s, i, t]);
+            }
+            links.push({source: s, target: i}, {source: i, target: t});
+        });
 
-            links.forEach(function (link) {
-                var s = link.source = nodeById.get(link.source),
-                    t = link.target = nodeById.get(link.target),
-                    i = {}; // intermediate node
+        var divTooltip = d3.select($element[0]).select(".network-chart-main-container").append("div")
+            .attr("class", "data-node-tooltip")
+            .style("opacity", 0);
 
-                nodes.push(i);
-                if (s.id === central_node || t.id === central_node) {
-                    mainBilinks.push([s, i, t]);
-                } else {
-                    bilinks.push([s, i, t]);
-                }
-                links.push({source: s, target: i}, {source: i, target: t});
-            });
+        var link = svg.selectAll(".link")
+            .data(bilinks)
+            .enter().append("path")
+            .attr("class", "link");
 
-            var divTooltip = d3.select(".network-chart-main-container").append("div")
-                .attr("class", "data-node-tooltip")
-                .style("opacity", 0);
+        var mainLink = svg.selectAll(".mainLink")
+            .data(mainBilinks)
+            .enter().append("path")
+            .attr("class", "link");
 
-            var link = svg.selectAll(".link")
-                .data(bilinks)
-                .enter().append("path")
-                .attr("class", "link");
 
-            var mainLink = svg.selectAll(".mainLink")
-                .data(mainBilinks)
-                .enter().append("path")
-                .attr("class", "link");
+        var node = svg.selectAll(".node")
+            .data(nodes.filter(function (d) {
+                return d.id;
+            }))
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", 10)
+            .attr("id", function (d) {
+                return d.id
+            })
+            .on("click", function (d) {
+                return handleMouseClickNode(d)
+            })
+            .on("mouseover", function (d) {
+                return mouse_events.handleMouseOverNode(d, divTooltip, svg)
+            })
+            .on("mouseout", function (d) {
+                return mouse_events.handleMouseOutNode(d, divTooltip, svg)
+            })
+            // .call -> Invokes the specified function exactly once, passing in this selection
+            // along with any optional arguments. Returns this selection.
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended)
+            );
 
-            var node = svg.selectAll(".node")
-                .data(nodes.filter(function (d) {
-                    return d.id;
-                }))
-                .enter().append("circle")
-                .attr("class", "node")
-                .attr("r", 10)
-                .attr("id", function (d) {
-                    return d.id
-                })
-                .on("click", function (d) {
-                    return handleMouseClickNode(d)
-                })
-                .on("mouseover", handleMouseOverNode)
-                .on("mouseout", handleMouseOutNode)
-                // .call -> Invokes the specified function exactly once, passing in this selection
-                // along with any optional arguments. Returns this selection.
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended)
-                );
+        // set width and height for dataInfo container
+        var $dataInfo = $element.find('.dataInfo');
+        var newWidth = width / 8;
+        var newHeight = newWidth / ratio;
 
-            // set width and height for dataInfo container
-            var $dataInfo = $("#dataInfo");
-            var newWidth = width / 8;
-            var newHeight = newWidth / ratio;
+        $dataInfo.width(newWidth).height(newHeight);
 
-            $dataInfo.width(newWidth).height(newHeight);
+        simulation
+            .nodes(nodes)
+            // tick - after each tick of the simulation’s internal timer.
+            .on("tick", ticked);
 
-            simulation
-                .nodes(nodes)
-                // tick - after each tick of the simulation’s internal timer.
-                .on("tick", ticked);
+        simulation.force("link")
+            .links(links);
 
-            simulation.force("link")
-                .links(links);
+        function ticked() {
+            link.attr("d", positionLink);
+            mainLink.attr('d', straightLink);
+            node.attr("transform", positionNode);
+        }
 
-            function ticked() {
-                link.attr("d", positionLink);
-                mainLink.attr('d', straightLink);
-                node.attr("transform", positionNode);
+
+        /**
+         *  Mouseover, mouseout and onclick events
+         */
+
+        function handleMouseClickNode(d) {
+            var data = data_display.getNearLinksAndNodes(d, links);
+            data_display.highlightElements(data, d, svg);
+            data_display.getInfoForSelectedNode($element, d);
+            exposeSiblingNodes(data.nodes);
+        }
+
+        /**
+         *  Expose data from nodes
+         *  (1) simulate click on chart when user clicks on item list
+         *  (2) simulate hover on chart when user hovers list item
+         *  (3) add and remove mouseover event
+         **/
+
+        function exposeSiblingNodes(exposing_nodes) {
+            var d = document;
+            var listNode = $element.find('.dataList')[0];
+
+            // clear existing list
+            while (listNode.firstChild) {
+                listNode.removeChild(listNode.firstChild);
             }
 
-
-            /**
-             *  Mouseover, mouseout and onclick events
-             */
-
-            function handleMouseClickNode(d) {
-                var data = getNearLinksAndNodes(d);
-                highlightElements(data, d);
-                exposeSiblingNodes(data.nodes);
-                getInfoForSelectedNode(d);
-            }
-
-            var existing_class = null;
-
-            function handleMouseOverNode(d) {
-                divTooltip.transition()
-                    .duration(200)
-                    .style("opacity", 1);
-                divTooltip.attr("data-node-tooltip", d.id)
-                    .style("left", d.x + "px")
-                    .style("top", (d.y - 22) + "px");
-
-                var d3Node = d3.select("#" + d.id);
-                existing_class = d3Node.attr("class");
-                d3Node.classed("active", true);
-            }
-
-            function handleMouseOutNode(d) {
-                divTooltip.transition()
-                    .duration(500)
-                    .style("opacity", 0);
-                var d3Node = d3.select("#" + d.id);
-                var temp = d3Node.attr("class");
-                if (!(temp.indexOf("clicked") !== -1 )) {
-                    d3Node.attr("class", existing_class);
-                }
-            }
-
-            /**
-             *  Find first sibling nodes and highlight their links
-             */
-
-            function getNearLinksAndNodes(node) {
-                var nearLinks = [];
-                var nearNodes = [];
-
-                links.forEach(function (link) {
-                    if (link.source.id === node.id && link.value) {
-                        nearLinks.push(link);
-                        nearNodes.push(link.target);
-                    } else if (link.target.id === node.id && link.value) {
-                        nearLinks.push(link);
-                        nearNodes.push(link.source);
-                    }
+            exposing_nodes.forEach(function (node) {
+                var listElementNode = d.createElement("LI");
+                listElementNode.dataset.mit_tooltip = node.id;
+                var imgNode = d.createElement('img');
+                imgNode.src = node.img_url;
+                imgNode.onclick = function () {
+                    handleMouseClickNode(node);
+                };
+                imgNode.addEventListener("mouseover", function () {
+                    mouse_events.handleMouseOverNode(node, divTooltip, svg);
+                });
+                imgNode.addEventListener("mouseout", function () {
+                    mouse_events.handleMouseOutNode(node, divTooltip, svg);
                 });
 
-                return {
-                    nodes: nearNodes,
-                    links: nearLinks
-                };
-            }
-
-            /**
-             *  Expose data from nodes
-             *  (1) simulate click on chart when user clicks on item list
-             *  (2) simulate hover on chart when user hovers list item
-             *  (3) add and remove mouseover event
-             */
-
-            function exposeSiblingNodes(nodes) {
-                var d = document;
-                var listNode = d.getElementById("dataList");
-
-                // clear existing list
-                while (listNode.firstChild) {
-                    listNode.removeChild(listNode.firstChild);
-                }
-
-                nodes.forEach(function (node) {
-                    var listElementNode = d.createElement("LI");
-                    listElementNode.dataset.mit_tooltip = node.id;
-                    var imgNode = d.createElement('img');
-                    imgNode.src = node.img_url;
-                    imgNode.onclick = function () {
-                        handleMouseClickNode(node);
-                    };
-                    imgNode.addEventListener("mouseover", function () {
-                        handleMouseOverNode(node);
-                    });
-                    imgNode.addEventListener("mouseout", function () {
-                        handleMouseOutNode(node);
-                    });
-
-                    listElementNode.appendChild(imgNode);
-                    listNode.appendChild(listElementNode);
-                })
-            }
-
-
-        });
+                listElementNode.appendChild(imgNode);
+                listNode.appendChild(listElementNode);
+            })
+        }
 
         function setDistance(d) {
             var source_id = d.source.id,
@@ -245,7 +204,7 @@ global.initChart = function (runtime, element) {
 
         function straightLink(d) {
             return "M" + d[0].x + "," + d[0].y
-                + "S" + (d[0].x + d[2].x) / 2 + "," + (d[0].y + d[2].y) / 2.1
+                + "S" + (d[0].x + d[2].x) / 2 + "," + (d[0].y + d[2].y) / 2.25
                 + " " + d[2].x + "," + d[2].y;
         }
 
@@ -270,113 +229,173 @@ global.initChart = function (runtime, element) {
             d.fx = null;
             d.fy = null;
         }
-
-        /**
-         *  Function receives data (links and nodes) and selected node.
-         *  Every node will be set as inactive except for the selected one.
-         *  The same is with links.
-         */
-
-        function highlightElements(data, selected_node) {
-            d3.selectAll(".link").each(function (link) {
-                var svgLink = d3.select(this);
-                svgLink.classed("inactive", true);
-                data.links.forEach(function (el) {
-                    if (el.source.id === link[0].id && el.target.id === link[2].id) {
-                        svgLink.classed("inactive", false);
-                    }
-                })
-
-            });
-
-            d3.selectAll(".node").each(function (node) {
-                var svgNode = d3.select(this);
-                svgNode.classed("inactive", true);
-                svgNode.classed("active", false);
-                svgNode.classed("clicked", false);
-
-                data.nodes.forEach(function (el) {
-                    if (el.id === node.id) {
-                        svgNode.classed("inactive", false);
-                    } else if (selected_node.id === node.id) {
-                        svgNode.classed("active", true);
-                        svgNode.classed("clicked", true);
-                    }
-                })
-
-            });
-        }
-
-
-        /**
-         *  Get info about selected node
-         */
-
-        function getInfoForSelectedNode(node) {
-            var d = document;
-            var infoContainer = d.getElementById("dataInfo");
-
-            infoContainer.className = "active";
-            infoContainer.innerHTML = "";
-            // info text
-            var textNode = d.createElement("div");
-            textNode.className = "text-info";
-            var textElement = d.createTextNode(node.id);
-            textNode.appendChild(textElement);
-            // image
-            var imgNode = d.createElement("img");
-            imgNode.setAttribute("src", node.img_url);
-            // overlay
-            var overlayElement = d.createElement("div");
-            overlayElement.className = "data-info-overlay";
-
-            infoContainer.appendChild(imgNode);
-            infoContainer.appendChild(textNode);
-            infoContainer.appendChild(overlayElement);
-        }
     }
+    createGraph();
 
     window.addEventListener('resize', function () {
-        // only run if we're not throttled
+        // do not remove this comment
+        /* only run if we're not throttled
         if (!throttled) {
             // actual callback action
-            dimensions = utils.getDimensions($element);
-            width = dimensions.width;
-            height = dimensions.height;
-            createGraph();
-
+            mainFunction();
             // we're throttled!
             throttled = true;
             // set a timeout to un-throttle
             setTimeout(function () {
                 throttled = false;
-                createGraph();
+                mainFunction();
             }, delay);
-        }
+        }*/
+        createGraph();
     });
-
-    dimensions = utils.getDimensions($element);
-    width = dimensions.width;
-    height = dimensions.height;
-    createGraph();
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./utils.js":2}],2:[function(require,module,exports){
+},{"./manipulate_data_display.js":2,"./mouse_events.js":3,"./utils.js":4}],2:[function(require,module,exports){
 'use strict';
 
-function getDimensions($element) {
-    var chart = $element.find('.network-chart-main-container')[0];
-    var width = chart.offsetWidth,
-      height = chart.offsetHeight;
+/**
+ *  Find first sibling nodes and highlight their links
+ */
 
-    // in this case, the chart is rendering in studio, so we'll take
-    // first known container's width as a reference
-    if (width === 0) {
-        width = $element.parents('.content-primary').width;
-        height = width * 0.5;
+function getNearLinksAndNodes(node, links) {
+    var nearLinks = [];
+    var nearNodes = [];
+
+    links.forEach(function (link) {
+        if (link.source.id === node.id && link.value) {
+            nearLinks.push(link);
+            nearNodes.push(link.target);
+        } else if (link.target.id === node.id && link.value) {
+            nearLinks.push(link);
+            nearNodes.push(link.source);
+        }
+    });
+
+    return {
+        nodes: nearNodes,
+        links: nearLinks
+    };
+}
+
+/**
+ *  Function receives data (links and nodes) and selected node.
+ *  Every node will be set as inactive except for the selected one.
+ *  The same is with links.
+ */
+
+function highlightElements(data, selected_node, svg) {
+    svg.selectAll(".link").each(function (link) {
+        var svgLink = d3.select(this);
+        svgLink.classed("inactive", true);
+        data.links.forEach(function (el) {
+            if (el.source.id === link[0].id && el.target.id === link[2].id) {
+                svgLink.classed("inactive", false);
+            }
+        })
+
+    });
+
+    svg.selectAll(".node").each(function (node) {
+        var svgNode = d3.select(this);
+        svgNode.classed("inactive", true);
+        svgNode.classed("active", false);
+        svgNode.classed("clicked", false);
+
+        data.nodes.forEach(function (el) {
+            if (el.id === node.id) {
+                svgNode.classed("inactive", false);
+            } else if (selected_node.id === node.id) {
+                svgNode.classed("active", true);
+                svgNode.classed("clicked", true);
+            }
+        })
+
+    });
+}
+
+/**
+ *  Get info about selected node
+ */
+
+function getInfoForSelectedNode($element, node) {
+    var d = document;
+    var infoContainer = $element.find('.dataInfo')[0];
+
+    infoContainer.className = "dataInfo active";
+    infoContainer.innerHTML = "";
+    // info text
+    var textNode = d.createElement("div");
+    textNode.className = "text-info";
+    var textElement = d.createTextNode(node.id);
+    textNode.appendChild(textElement);
+    // image
+    var imgNode = d.createElement("img");
+    imgNode.setAttribute("src", node.img_url);
+    // overlay
+    var overlayElement = d.createElement("div");
+    overlayElement.className = "data-info-overlay";
+
+    infoContainer.appendChild(imgNode);
+    infoContainer.appendChild(textNode);
+    infoContainer.appendChild(overlayElement);
+}
+
+module.exports = {
+    getNearLinksAndNodes: getNearLinksAndNodes,
+    getInfoForSelectedNode: getInfoForSelectedNode,
+    highlightElements: highlightElements
+};
+},{}],3:[function(require,module,exports){
+'use strict';
+
+var existing_class = null;
+function handleMouseOverNode(d, divTooltip, svg) {
+    divTooltip.transition()
+        .duration(200)
+        .style("opacity", 1);
+    divTooltip.attr("data-node-tooltip", d.id)
+        .style("left", d.x + "px")
+        .style("top", (d.y - 22) + "px");
+
+    var d3Node = svg.select("#" + d.id);
+    existing_class = d3Node.attr("class");
+    d3Node.classed("active", true);
+}
+
+function handleMouseOutNode(d, divTooltip, svg) {
+    divTooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+    var d3Node = svg.select("#" + d.id);
+    var temp = d3Node.attr("class");
+    if (!(temp.indexOf("clicked") !== -1 )) {
+        d3Node.attr("class", existing_class);
     }
+}
 
+module.exports = {
+    handleMouseOverNode: handleMouseOverNode,
+    handleMouseOutNode: handleMouseOutNode
+};
+},{}],4:[function(require,module,exports){
+'use strict';
+
+function isRenderedInStudio() {
+    var studio_wrapper = $('.network-chart-main-container').parents('.studio-xblock-wrapper');
+    return studio_wrapper[0] ? true : false;
+}
+
+function getDimensions($element) {
+    var width,
+        height;
+    if (isRenderedInStudio()) {
+        width = $element.parents('.content-primary').width();
+        height = width * 0.5;
+    } else {
+        width = window.innerWidth;
+        height = window.innerHeight;
+    }
     return {
         width: width,
         height: height
@@ -384,6 +403,7 @@ function getDimensions($element) {
 }
 
 module.exports = {
-    getDimensions: getDimensions
-}
+    getDimensions: getDimensions,
+    isRenderedInStudio: isRenderedInStudio
+};
 },{}]},{},[1]);

@@ -45,14 +45,14 @@ html, body, p {
 }
 
 .inactive {
-    stroke: #f2c1ae;
+    stroke: #954D35;
 
 }
 path.inactive{
-    opacity:0.5;
+    stroke: #954D35;
 }
 
-#chart, svg {
+.chart, svg {
     width: 100%;
     height: 100%;
     min-height: 500px;
@@ -60,41 +60,43 @@ path.inactive{
 
 /* List of sibling nodes */
 
-#dataList {
+.dataList {
     position: absolute;
     bottom: 0;
     width: 100%;
     list-style: none;
     text-align: center;
-
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
-#dataList li {
+.dataList li {
     display: inline-block;
-    width: 75px;
-    height: 85px;
-    opacity: .5;
+    width: 90px;
+    height: 100px;
+    opacity: .33;
+    padding-bottom: 0;
 }
 
-#dataList li:hover {
+.dataList li:hover {
     opacity: 1;
 }
 
-#dataList img {
+.dataList img {
     width: 100%;
     height: 100%;
 }
 
 /* Active node - container for info display */
 
-#dataInfo {
+.dataInfo {
     position: absolute;
     right: 11%;
     top: 30%;
     border: 7px solid #da7049;
 }
 
-#dataInfo img {
+.dataInfo img {
     height: 100%;
     overflow: hidden;
 }
@@ -136,4 +138,8 @@ path.inactive{
 
 div.data-node-tooltip {
   position: absolute;
+}
+
+.network-chart-main-container .note {
+    color: black;
 }

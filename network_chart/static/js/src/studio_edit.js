@@ -8,7 +8,7 @@ function StudioEdit(runtime, element) {
         var data = new FormData();
         data.append('usage_id', $element.data('usage-id'));
         data.append('display_name', $element.find('input[name=display_name]').val());
-        data.append('json_url', $element.find('input[name=json_url]').val());
+        data.append('json_data', $element.find('input[name=json_data]')[0].files[0]);
         data.append('display_description', $element.find('input[name=display_description]').val());
         data.append('thumbnail', $element.find('input[name=thumbnail]')[0].files[0]);
 

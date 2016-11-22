@@ -1,6 +1,8 @@
 """TO-DO: Write a description of what this XBlock is."""
 
 import pkg_resources
+import json
+import urllib2
 
 from xblock.core import XBlock
 from xblock.fields import Scope, String
@@ -22,6 +24,7 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
                           help="This name appears in the horizontal navigation at the top of the page.")
 
     json_url = String(help="URL of the JSON data", default=None, scope=Scope.content)
+    json_data = String(help="JSON data", default=None, scope=Scope.content)
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -41,9 +44,10 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
         frag.add_css(self.resource_string("static/css/chart.css"))
         frag.add_css(self.resource_string("static/css/tooltip.css"))
         frag.add_javascript(self.resource_string("static/js/src/d3.v4.js"))
-        # frag.add_javascript(self.resource_string("static/js/src/chart.js"))
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/dist/bundle.js'))
-        frag.initialize_js('initChart')
+        frag.initialize_js('initChart', {
+                'json_data': self.json_data
+        })
         return frag
 
     def studio_view(self, context):
@@ -70,13 +74,21 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
         data = request.POST
 
         self.display_name = data.get('display_name')
-        self.json_url = data.get('json_url')
         self.display_description = data.get('display_description')
 
         block_id = data['usage_id']
         if not isinstance(data['thumbnail'], basestring):
             upload = data['thumbnail']
             self.thumbnail_url = self.upload_to_s3('THUMBNAIL', upload.file, block_id, self.thumbnail_url)
+
+        if not isinstance(data['json_data'], basestring):
+            upload = data['json_data']
+            self.json_url = self.upload_to_s3('JSON', upload.file, block_id, self.json_url)
+            req = urllib2.Request(self.json_url)
+            opener = urllib2.build_opener()
+            f = opener.open(req)
+            _json = json.loads(f.read())
+            self.json_data = json.dumps(_json)
 
         return Response(json_body={'result': 'success'})
 
