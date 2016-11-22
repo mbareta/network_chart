@@ -3,29 +3,31 @@
 var utils = require('./utils.js');
 var data_display = require('./manipulate_data_display.js');
 var mouse_events = require('./mouse_events.js');
-//var data_display = require('./manipulate_data_display.js');
 
 
 global.initChart = function (runtime, element, data) {
-    var chart_data = JSON.parse(data['json_data']);
-    const central_node = 'KC';
-    var $element = $(element);
-    if (!chart_data) {
-        var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
-        $element.find('.network-chart-main-container').html(note);
-    }
+    var throttled = false;
+    var delay = 250;
 
-    var dimensions = utils.getDimensions($element);
-    var width = dimensions.width,
-        height = dimensions.height,
-        ratio = 0.78, // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
-        throttled = false,
-        delay = 250;
+    function mainFunction() {
+        var chart_data = JSON.parse(data['json_data']);
 
-    var $chart = $element.find(".chart");
+        const central_node = 'KC';
+        var $element = $(element);
+        if (!chart_data) {
+            var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
+            $element.find('.network-chart-main-container').html(note);
+        }
 
+        var dimensions = utils.getDimensions($element);
+        var width = dimensions.width;
+        var height = dimensions.height;
 
-    function createGraph(chart_data) {
+        var ratio = 0.78; // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
+
+        var $chart = $element.find(".chart");
+
+        //function createGraph() {
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
         var svg = d3.select($element[0]).select('svg');
@@ -157,10 +159,10 @@ global.initChart = function (runtime, element, data) {
                     handleMouseClickNode(node);
                 };
                 imgNode.addEventListener("mouseover", function () {
-                    mouse_events.handleMouseOverNode(node);
+                    mouse_events.handleMouseOverNode(node, divTooltip, svg);
                 });
                 imgNode.addEventListener("mouseout", function () {
-                    mouse_events.handleMouseOutNode(node);
+                    mouse_events.handleMouseOutNode(node, divTooltip, svg);
                 });
 
                 listElementNode.appendChild(imgNode);
@@ -227,33 +229,22 @@ global.initChart = function (runtime, element, data) {
             d.fx = null;
             d.fy = null;
         }
-
     }
-
-
+    mainFunction();
     window.addEventListener('resize', function () {
         // only run if we're not throttled
         if (!throttled) {
             // actual callback action
-            dimensions = utils.getDimensions($element);
-            width = dimensions.width;
-            height = dimensions.height;
-            createGraph();
-
+            mainFunction();
             // we're throttled!
             throttled = true;
             // set a timeout to un-throttle
             setTimeout(function () {
                 throttled = false;
-                createGraph();
+                mainFunction();
             }, delay);
         }
     });
-
-    dimensions = utils.getDimensions($element);
-    width = dimensions.width;
-    height = dimensions.height;
-    createGraph(chart_data);
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
@@ -387,22 +378,27 @@ module.exports = {
 },{}],4:[function(require,module,exports){
 'use strict';
 
-function isRenderedInStudio($main_container){
-    var studio_wrapper = $main_container.parents('.studio-xblock-wrapper');
+function isRenderedInStudio() {
+    var studio_wrapper = $('.network-chart-main-container').parents('.studio-xblock-wrapper');
     return studio_wrapper[0] ? true : false;
 }
 
 function getDimensions($element) {
-    var chart = $element.find('.network-chart-main-container')[0];
-    var width = chart.offsetWidth,
-      height = chart.offsetHeight;
-
-    // in this case, the chart is rendering in studio, so we'll take
-    // first known container's width as a reference
-    if (width === 0) {
+    //var chart = document.getElementById('app');
+    debugger;
+    //var chart = $element.find('.network-chart-main-container')[0];
+    //var width = chart.offsetWidth,
+    //  height = chart.offsetHeight;
+    var width,
+        height;
+    if (isRenderedInStudio()) {
         width = $element.parents('.content-primary').width();
         height = width * 0.5;
+    } else {
+        width = window.innerWidth;
+        height = window.innerHeight;
     }
+    debugger;
 
     return {
         width: width,

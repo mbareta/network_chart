@@ -1,29 +1,31 @@
 var utils = require('./utils.js');
 var data_display = require('./manipulate_data_display.js');
 var mouse_events = require('./mouse_events.js');
-//var data_display = require('./manipulate_data_display.js');
 
 
 global.initChart = function (runtime, element, data) {
-    var chart_data = JSON.parse(data['json_data']);
-    const central_node = 'KC';
-    var $element = $(element);
-    if (!chart_data) {
-        var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
-        $element.find('.network-chart-main-container').html(note);
-    }
+    var throttled = false;
+    var delay = 250;
 
-    var dimensions = utils.getDimensions($element);
-    var width = dimensions.width,
-        height = dimensions.height,
-        ratio = 0.78, // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
-        throttled = false,
-        delay = 250;
+    function mainFunction() {
+        var chart_data = JSON.parse(data['json_data']);
 
-    var $chart = $element.find(".chart");
+        const central_node = 'KC';
+        var $element = $(element);
+        if (!chart_data) {
+            var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
+            $element.find('.network-chart-main-container').html(note);
+        }
 
+        var dimensions = utils.getDimensions($element);
+        var width = dimensions.width;
+        var height = dimensions.height;
 
-    function createGraph(chart_data) {
+        var ratio = 0.78; // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
+
+        var $chart = $element.find(".chart");
+
+        //function createGraph() {
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
         var svg = d3.select($element[0]).select('svg');
@@ -155,10 +157,10 @@ global.initChart = function (runtime, element, data) {
                     handleMouseClickNode(node);
                 };
                 imgNode.addEventListener("mouseover", function () {
-                    mouse_events.handleMouseOverNode(node);
+                    mouse_events.handleMouseOverNode(node, divTooltip, svg);
                 });
                 imgNode.addEventListener("mouseout", function () {
-                    mouse_events.handleMouseOutNode(node);
+                    mouse_events.handleMouseOutNode(node, divTooltip, svg);
                 });
 
                 listElementNode.appendChild(imgNode);
@@ -225,31 +227,20 @@ global.initChart = function (runtime, element, data) {
             d.fx = null;
             d.fy = null;
         }
-
     }
-
-
+    mainFunction();
     window.addEventListener('resize', function () {
         // only run if we're not throttled
         if (!throttled) {
             // actual callback action
-            dimensions = utils.getDimensions($element);
-            width = dimensions.width;
-            height = dimensions.height;
-            createGraph();
-
+            mainFunction();
             // we're throttled!
             throttled = true;
             // set a timeout to un-throttle
             setTimeout(function () {
                 throttled = false;
-                createGraph();
+                mainFunction();
             }, delay);
         }
     });
-
-    dimensions = utils.getDimensions($element);
-    width = dimensions.width;
-    height = dimensions.height;
-    createGraph(chart_data);
 };

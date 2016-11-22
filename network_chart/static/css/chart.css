@@ -137,3 +137,7 @@ path.inactive{
 div.data-node-tooltip {
   position: absolute;
 }
+
+.network-chart-main-container .note {
+    color: black;
+}
