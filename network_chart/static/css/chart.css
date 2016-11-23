@@ -101,6 +101,22 @@ path.inactive{
     overflow: hidden;
 }
 
+.dataInfo .text-info {
+    position: absolute;
+    bottom: 0;
+    padding: 2px;
+}
+
+.text-info p {
+    height: auto;
+    margin: 0 !important;
+}
+
+.text-info .fa {
+    padding-left: 5px;
+    cursor: pointer;
+}
+
 .data-info-overlay {
     z-index: 5;
     bottom: 0;
