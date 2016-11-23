@@ -120,7 +120,6 @@ global.initChart = function (runtime, element, data) {
             node.attr("transform", positionNode);
         }
 
-
         /**
          *  Mouseover, mouseout and onclick events
          */

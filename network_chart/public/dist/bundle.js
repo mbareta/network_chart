@@ -122,7 +122,6 @@ global.initChart = function (runtime, element, data) {
             node.attr("transform", positionNode);
         }
 
-
         /**
          *  Mouseover, mouseout and onclick events
          */
@@ -319,26 +318,71 @@ function highlightElements(data, selected_node, svg) {
  */
 
 function getInfoForSelectedNode($element, node) {
-    var d = document;
-    var infoContainer = $element.find('.dataInfo')[0];
+    function createDataTooltip() {
+        // TODO: @Slavko, this is where the tooltip is created
+        // node.company.description is content which should be displayed
+        return d3.select($element[0]).select('.dataInfo').append('div')
+            .attr('class', 'data-node-tooltip tooltip-bottom')
+            .attr('data-node-tooltip', node.company.description)
+            .style('opacity', 0);
+            //.style('position', 'relative');
 
-    infoContainer.className = "dataInfo active";
-    infoContainer.innerHTML = "";
+    }
+
+    function handleMouseOverInfo(divTooltip) {
+        divTooltip.transition()
+            .duration(200)
+            .style("opacity", 1);
+    }
+
+    function handleMouseOutInfo(divTooltip) {
+        divTooltip.transition()
+            .duration(200)
+            .style("opacity", 0);
+    }
+
+    var $infoContainer = $element.find('.dataInfo');
+    $infoContainer.removeClass('hidden');
+    $infoContainer.html('');
+
     // info text
-    var textNode = d.createElement("div");
-    textNode.className = "text-info";
-    var textElement = d.createTextNode(node.id);
-    textNode.appendChild(textElement);
-    // image
-    var imgNode = d.createElement("img");
-    imgNode.setAttribute("src", node.img_url);
-    // overlay
-    var overlayElement = d.createElement("div");
-    overlayElement.className = "data-info-overlay";
+    var $companyNode = ($('<p></p>')
+            .addClass('company')
+            .append(node.company.name)
+    );
 
-    infoContainer.appendChild(imgNode);
-    infoContainer.appendChild(textNode);
-    infoContainer.appendChild(overlayElement);
+    if (node.company.description) {
+        var divTooltip = createDataTooltip();
+        var $companyInfo = ($('<span class="fa fa-info-circle"></span>'));
+        $companyInfo.mouseover(function() { return handleMouseOverInfo(divTooltip)});
+        $companyInfo.mouseout(function() {return handleMouseOutInfo(divTooltip)});
+        $companyNode.append($companyInfo);
+
+    }
+
+    var $paragraphNode = $('<div></div>')
+        .addClass('text-info')
+        .append($('<p></p>')
+            .addClass('name')
+            .append(node.id)
+        )
+        .append($('<p></p>')
+            .addClass('position')
+            .append(node.position)
+        )
+        .append($companyNode);
+
+    // image
+    var $imgNode = $('<img />')
+        .attr('src', node.img_url);
+
+    // overlay
+    var $overlay = $('<div></div>')
+        .addClass('data-info-overlay');
+
+    $infoContainer.append($imgNode);
+    $infoContainer.append($paragraphNode);
+    $infoContainer.append($overlay);
 }
 
 module.exports = {
