@@ -12,22 +12,19 @@ global.initChart = function (runtime, element, data) {
     function createGraph() {
         var chart_data = JSON.parse(data['json_data']);
 
-        const central_node = 'KC';
         var $element = $(element);
         if (!chart_data) {
             var note = '<p class="note"> Please, go to edit and upload JSON file for the data. </p>';
             $element.find('.network-chart-main-container').html(note);
         }
-
         var dimensions = utils.getDimensions($element);
+
         var width = dimensions.width;
         var height = dimensions.height;
-
         var ratio = 0.78; // ideal ratio is w / h = 0.78 (ex. w: 250, h: 320)
 
         var $chart = $element.find(".chart");
 
-        //function createGraph() {
         $chart.find("svg").empty(); // clear previous html structure for precise rendering on resize
 
         var svg = d3.select($element[0]).select('svg');
@@ -37,7 +34,10 @@ global.initChart = function (runtime, element, data) {
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
 
+        //console.log("nodes: ", chart_data['nodes']);
+        //console.log("central node: ", chart_data['nodes'][0]);
         var nodes = chart_data['nodes'],
+            central_node = nodes[0].id,
             nodeById = d3.map(nodes, function (d) {
                 return d.id;
             }),
@@ -322,11 +322,9 @@ function getInfoForSelectedNode($element, node) {
         // TODO: @Slavko, this is where the tooltip is created
         // node.company.description is content which should be displayed
         return d3.select($element[0]).select('.dataInfo').append('div')
-            .attr('class', 'data-node-tooltip tooltip-bottom')
-            .attr('data-node-tooltip', node.company.description)
+            .attr('class', 'data-info-tooltip')
+            .attr('data-info-tooltip', node.company.description)
             .style('opacity', 0);
-            //.style('position', 'relative');
-
     }
 
     function handleMouseOverInfo(divTooltip) {
@@ -337,7 +335,7 @@ function getInfoForSelectedNode($element, node) {
 
     function handleMouseOutInfo(divTooltip) {
         divTooltip.transition()
-            .duration(200)
+            .duration(500)
             .style("opacity", 0);
     }
 

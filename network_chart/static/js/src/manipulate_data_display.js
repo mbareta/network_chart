@@ -66,11 +66,10 @@ function highlightElements(data, selected_node, svg) {
 
 function getInfoForSelectedNode($element, node) {
     function createDataTooltip() {
-        // TODO: @Slavko, this is where the tooltip is created
         // node.company.description is content which should be displayed
         return d3.select($element[0]).select('.dataInfo').append('div')
-            .attr('class', 'data-node-tooltip tooltip-bottom')
-            .attr('data-node-tooltip', node.company.description)
+            .attr('class', 'data-info-tooltip')
+            .attr('data-info-tooltip', node.company.description)
             .style('opacity', 0);
     }
 
@@ -82,7 +81,7 @@ function getInfoForSelectedNode($element, node) {
 
     function handleMouseOutInfo(divTooltip) {
         divTooltip.transition()
-            .duration(200)
+            .duration(500)
             .style("opacity", 0);
     }
 

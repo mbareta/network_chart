@@ -105,6 +105,7 @@ path.inactive{
     position: absolute;
     bottom: 0;
     padding: 2px;
+    margin-bottom: 15px;
 }
 
 .text-info p {
