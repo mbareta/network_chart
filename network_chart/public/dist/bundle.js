@@ -34,8 +34,6 @@ global.initChart = function (runtime, element, data) {
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
 
-        //console.log("nodes: ", chart_data['nodes']);
-        //console.log("central node: ", chart_data['nodes'][0]);
         var nodes = chart_data['nodes'],
             central_node = nodes[0].id,
             nodeById = d3.map(nodes, function (d) {
@@ -319,7 +317,6 @@ function highlightElements(data, selected_node, svg) {
 
 function getInfoForSelectedNode($element, node) {
     function createDataTooltip() {
-        // TODO: @Slavko, this is where the tooltip is created
         // node.company.description is content which should be displayed
         return d3.select($element[0]).select('.dataInfo').append('div')
             .attr('class', 'data-info-tooltip')
