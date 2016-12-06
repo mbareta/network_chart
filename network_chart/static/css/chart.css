@@ -60,17 +60,17 @@ path.inactive{
 
 /* List of sibling nodes */
 
-.dataList {
+ul.dataList {
     position: absolute;
     bottom: 0;
     width: 100%;
     list-style: none;
     text-align: center;
     margin-bottom: 0;
-    padding-bottom: 0;
+    padding: 0;
 }
 
-.dataList li {
+ul.dataList li {
     display: inline-block;
     width: 90px;
     height: 100px;
@@ -160,4 +160,10 @@ div.data-node-tooltip {
 
 .network-chart-main-container .note {
     color: black;
+}
+
+@media (max-width: 1399px) {
+    ul.dataList li {
+        width: 80px;
+    }
 }

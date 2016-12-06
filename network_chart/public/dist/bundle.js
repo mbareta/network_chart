@@ -80,7 +80,7 @@ global.initChart = function (runtime, element, data) {
             .attr("class", "node")
             .attr("r", 10)
             .attr("id", function (d) {
-                return d.id
+                return d.id.replace(' ', '');
             })
             .on("click", function (d) {
                 return handleMouseClickNode(d)
@@ -397,7 +397,8 @@ function handleMouseOverNode(d, divTooltip, svg) {
         .style("left", d.x + "px")
         .style("top", (d.y - 22) + "px");
 
-    var d3Node = svg.select("#" + d.id);
+    var _id = d.id.replace(' ', '');
+    var d3Node = svg.select("#" + _id);
     existing_class = d3Node.attr("class");
     d3Node.classed("active", true);
 }
@@ -406,7 +407,8 @@ function handleMouseOutNode(d, divTooltip, svg) {
     divTooltip.transition()
         .duration(500)
         .style("opacity", 0);
-    var d3Node = svg.select("#" + d.id);
+    var _id = d.id.replace(' ', '');
+    var d3Node = svg.select("#" + _id);
     var temp = d3Node.attr("class");
     if (!(temp.indexOf("clicked") !== -1 )) {
         d3Node.attr("class", existing_class);

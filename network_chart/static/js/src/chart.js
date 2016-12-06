@@ -78,7 +78,7 @@ global.initChart = function (runtime, element, data) {
             .attr("class", "node")
             .attr("r", 10)
             .attr("id", function (d) {
-                return d.id
+                return d.id.replace(' ', '');
             })
             .on("click", function (d) {
                 return handleMouseClickNode(d)
