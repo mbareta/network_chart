@@ -21,7 +21,15 @@ function getDimensions($element) {
     }
 }
 
+function getResolution() {
+    // TODO: if this starts to expand, use switch instead of if condition
+    if (window.matchMedia('(max-width: 1399px)').matches) {
+        return 1399;
+    }
+}
+
 module.exports = {
     getDimensions: getDimensions,
-    isRenderedInStudio: isRenderedInStudio
+    isRenderedInStudio: isRenderedInStudio,
+    getResolution: getResolution
 };

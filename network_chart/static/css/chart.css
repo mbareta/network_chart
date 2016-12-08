@@ -48,7 +48,8 @@ html, body, p {
     stroke: #954D35;
 
 }
-path.inactive{
+
+path.inactive {
     stroke: #954D35;
 }
 
@@ -155,7 +156,7 @@ ul.dataList li {
  */
 
 div.data-node-tooltip {
-  position: absolute;
+    position: absolute;
 }
 
 .network-chart-main-container .note {
@@ -163,7 +164,16 @@ div.data-node-tooltip {
 }
 
 @media (max-width: 1399px) {
+    ul.dataList {
+        width: 95%;
+    }
+
     ul.dataList li {
-        width: 80px;
+        width: 70px;
+        height: 80px;
+    }
+
+    .dataInfo .text-info {
+        font-size: 12px;
     }
 }

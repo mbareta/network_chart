@@ -163,5 +163,6 @@
 @media (max-width: 1399px) {
     .data-info-tooltip:after {
         width: 300px;
+        left: -50%;
     }
 }

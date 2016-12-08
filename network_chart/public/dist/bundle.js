@@ -7,7 +7,8 @@ var mouse_events = require('./mouse_events.js');
 global.initChart = function (runtime, element, data) {
     // do not remove this comment
     /*var throttled = false;
-    var delay = 250;*/
+     var delay = 250;*/
+
 
     function createGraph() {
         var chart_data = JSON.parse(data['json_data']);
@@ -18,6 +19,7 @@ global.initChart = function (runtime, element, data) {
             $element.find('.network-chart-main-container').html(note);
         }
         var dimensions = utils.getDimensions($element);
+        var resolution = utils.getResolution();
 
         var width = dimensions.width;
         var height = dimensions.height;
@@ -169,13 +171,18 @@ global.initChart = function (runtime, element, data) {
 
         function setDistance(d) {
             var source_id = d.source.id,
-                target_id = d.target.id;
+                target_id = d.target.id,
+                delta = 0;
+
+            if (resolution <= 1399) {
+                delta = 30;
+            }
             if (source_id === central_node) {
-                return 150;
+                return 150 - delta;
             } else if (target_id === central_node) {
-                return 90;
+                return 90 - delta;
             } else {
-                return 55;
+                return 55 - delta;
             }
         }
 
@@ -227,22 +234,23 @@ global.initChart = function (runtime, element, data) {
             d.fy = null;
         }
     }
+
     createGraph();
 
     window.addEventListener('resize', function () {
         // do not remove this comment
         /* only run if we're not throttled
-        if (!throttled) {
-            // actual callback action
-            mainFunction();
-            // we're throttled!
-            throttled = true;
-            // set a timeout to un-throttle
-            setTimeout(function () {
-                throttled = false;
-                mainFunction();
-            }, delay);
-        }*/
+         if (!throttled) {
+         // actual callback action
+         mainFunction();
+         // we're throttled!
+         throttled = true;
+         // set a timeout to un-throttle
+         setTimeout(function () {
+         throttled = false;
+         mainFunction();
+         }, delay);
+         }*/
         createGraph();
     });
 };
@@ -443,8 +451,16 @@ function getDimensions($element) {
     }
 }
 
+function getResolution() {
+    // TODO: if this starts to expand, use switch instead of if condition
+    if (window.matchMedia('(max-width: 1399px)').matches) {
+        return 1399;
+    }
+}
+
 module.exports = {
     getDimensions: getDimensions,
-    isRenderedInStudio: isRenderedInStudio
+    isRenderedInStudio: isRenderedInStudio,
+    getResolution: getResolution
 };
 },{}]},{},[1]);
