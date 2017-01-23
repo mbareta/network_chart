@@ -2,7 +2,7 @@ html, body, p {
     padding: 0;
     margin: 0;
     height: 100%;
-    font-family: sans;
+    font-family: Hind;
 }
 
 .xblock-render .network-chart-main-container {
@@ -18,6 +18,14 @@ html, body, p {
     left: 0;
     height: 100%;
     width: 100%;
+}
+
+.network-chart-main-container .title {
+    color: white;
+    font-size: 46px;
+    position: absolute;
+    top: 10%;
+    left: 10%;
 }
 
 .hidden {
@@ -113,6 +121,7 @@ ul.dataList li {
 .text-info p {
     height: auto;
     margin: 0 !important;
+    font-size: 16px;
 }
 
 .text-info .fa {
@@ -145,10 +154,6 @@ ul.dataList li {
     color: #fdfdfd;
     font-size: 16px;
     z-index: 10;
-}
-
-.text-info p {
-    padding: 2px 0;
 }
 
 /**

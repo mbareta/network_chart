@@ -7,7 +7,7 @@ function handleMouseOverNode(d, divTooltip, svg) {
         .style("opacity", 1);
     divTooltip.attr("data-node-tooltip", d.id)
         .style("left", d.x + "px")
-        .style("top", (d.y - 22) + "px");
+        .style("top", ( d.y - 22 ) + "px");
 
     var _id = d.id.replace(' ', '');
     var d3Node = svg.select("#" + _id);

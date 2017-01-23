@@ -66,7 +66,6 @@
     color: #fff;
     content: attr(data-mit_tooltip);
     font-size: 14px;
-    font-family: sans;
     line-height: 1.2;
     text-align: center;
 }
@@ -79,9 +78,12 @@
     color: #fff;
     content: attr(data-node-tooltip);
     font-size: 14px;
-    font-family: sans;
     line-height: 1.2;
     text-align: center;
+}
+
+.data-info-tooltip {
+    white-space: pre-line;
 }
 
 .data-info-tooltip:after {
@@ -91,8 +93,7 @@
     background-color: #da7049;
     color: #fff;
     content: attr(data-info-tooltip);
-    font-size: 12px;
-    font-family: hido;
+    font-size: 14px;
     line-height: 1.2;
     text-align: left;
 }
@@ -135,7 +136,6 @@
 .data-info-tooltip:after {
     left: -15%;
     width: 350px;
-    white-space: pre;
 }
 
 /* Horizontally align top/bottom tooltips */
