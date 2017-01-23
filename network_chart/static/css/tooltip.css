@@ -4,7 +4,7 @@
 
 /* Base styles for the element that has a tooltip */
 [data-mit_tooltip],
-.data-node-tooltip{
+.data-node-tooltip {
     position: relative;
     cursor: pointer;
 }
@@ -12,15 +12,14 @@
 /* Base styles for the entire tooltip */
 [data-mit_tooltip]:before,
 [data-mit_tooltip]:after {
-  position: absolute;
-  visibility: hidden;
-  opacity: 0;
-	transition:
-		opacity 0.2s ease-in-out,
-		visibility 0.2s ease-in-out,
-		transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
-  transform: translate3d(0, 0, 0);
-  pointer-events: none;
+    position: absolute;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out,
+    visibility 0.2s ease-in-out,
+    transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+    transform: translate3d(0, 0, 0);
+    pointer-events: none;
 }
 
 .data-node-tooltip:before,
@@ -28,10 +27,9 @@
 .data-info-tooltip:before,
 .data-info-tooltip:after {
     position: absolute;
-    transition:
-      opacity 0.2s ease-in-out,
-      visibility 0.2s ease-in-out,
-      transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+    transition: opacity 0.2s ease-in-out,
+    visibility 0.2s ease-in-out,
+    transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
     transform: translate3d(0, 0, 0);
     pointer-events: none;
 }
@@ -94,7 +92,7 @@
     color: #fff;
     content: attr(data-info-tooltip);
     font-size: 12px;
-    font-family: sans;
+    font-family: hido;
     line-height: 1.2;
     text-align: left;
 }
@@ -137,6 +135,7 @@
 .data-info-tooltip:after {
     left: -15%;
     width: 350px;
+    white-space: pre;
 }
 
 /* Horizontally align top/bottom tooltips */
@@ -154,9 +153,10 @@
 .data-node-tooltip:focus:before,
 .data-node-tooltip:focus:after,
 .data-info-tooltip:hover:before,
-.data-info-tooltip:hover:after/*,
+.data-info-tooltip:hover:after /*,
 .data-info-tooltip:focus:before,
-.data-info-tooltip:focus:after*/ {
+.data-info-tooltip:focus:after*/
+{
     transform: translateY(-12px);
 }
 

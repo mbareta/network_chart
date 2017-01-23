@@ -98,8 +98,14 @@ function getInfoForSelectedNode($element, node) {
     if (node.company.description) {
         var divTooltip = createDataTooltip();
         var $companyInfo = ($('<span class="fa fa-info-circle"></span>'));
-        $companyInfo.mouseover(function() { return handleMouseOverInfo(divTooltip)});
-        $companyInfo.mouseout(function() {return handleMouseOutInfo(divTooltip)});
+        $companyInfo.hover(
+            function() {
+                return handleMouseOverInfo(divTooltip)
+            },
+            function() {
+                return handleMouseOutInfo(divTooltip)
+            }
+        );
         $companyNode.append($companyInfo);
 
     }
