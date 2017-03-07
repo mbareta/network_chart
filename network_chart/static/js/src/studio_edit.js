@@ -1,8 +1,79 @@
 function StudioEdit(runtime, element) {
 
-    var $element = $(element);
+    var CHARACTER_LIMIT = 675;
+    var currentJsonPath;
+    var currentJsonValidation;
 
-    $element.find('.save-button').bind('click', function () {
+    var $element = $(element);
+    var $saveBtn = $element.find('.save-button');
+    var $cancelBtn = $element.find('.cancel-button');
+    var $jsonUpload = $element.find('input[name=json_data]');
+    var $jsonUploadErrorSpan = $element.find('span.json-upload-error');
+
+    $jsonUpload.on('change', function (event) {
+        var reader = new FileReader();
+        reader.onload = onReaderLoad;
+        reader.readAsText(event.target.files[0]);
+    });
+
+    function onReaderLoad(event) {
+        try {
+            var obj = JSON.parse(event.target.result);
+
+            if (obj.nodes) {
+                currentJsonPath = '';
+                currentJsonValidation = {valid: true};
+
+                checkLength(obj.nodes);
+
+                if (currentJsonValidation.valid) {
+                    enableSave();
+                } else {
+                    disableSave('Invalid JSON file, too many characters in: ' + currentJsonValidation.path);
+                }
+            } else {
+                disableSave('JSON file should contain "nodes" array!');
+            }
+        } catch (e) {
+            console.log(e);
+            disableSave('Please provide a valid JSON file!');
+        }
+    }
+
+    function checkLength(node) {
+        if (node.id) {
+            currentJsonPath = node.id;
+        }
+        for (var prop in node) {
+            if (node.hasOwnProperty(prop)) {
+                var nodeProp = node[prop];
+                if (typeof nodeProp === 'string' && nodeProp.length > CHARACTER_LIMIT) {
+                    currentJsonValidation = {valid: false, path: currentJsonPath + '/' + prop};
+                } else if (typeof nodeProp === 'object') {
+                    checkLength(nodeProp);
+                }
+            }
+        }
+    }
+
+    function enableSave() {
+        $saveBtn.removeClass('disabled');
+        $jsonUploadErrorSpan.hide();
+    }
+
+    function disableSave(message) {
+        $saveBtn.addClass('disabled');
+        $jsonUploadErrorSpan.text(message);
+        $jsonUploadErrorSpan.show();
+    }
+
+    $saveBtn.on('click', onClickSave);
+
+    $cancelBtn.on('click', function () {
+        runtime.notify('cancel', {});
+    });
+
+    function onClickSave() {
         var handlerUrl = runtime.handlerUrl(element, 'studio_submit');
 
         var data = new FormData();
@@ -25,9 +96,5 @@ function StudioEdit(runtime, element) {
         }).done(function (response) {
             runtime.notify('save', {state: 'end'});
         });
-    });
-
-    $element.find('.cancel-button').bind('click', function () {
-        runtime.notify('cancel', {});
-    });
+    }
 }
