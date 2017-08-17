@@ -86,7 +86,7 @@ class NetworkChartXBlock(XBlock, FileUploadMixin):
             opener = urllib2.build_opener()
             f = opener.open(req)
             _json = json.loads(f.read())
-            self.json_data = json.dumps(upload)
+            self.json_data = json.dumps(_json)
 
         return Response(json_body={'result': 'success'})
 
