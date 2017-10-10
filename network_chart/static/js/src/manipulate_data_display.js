@@ -124,7 +124,8 @@ function getInfoForSelectedNode($element, node) {
 
     // image
     var $imgNode = $('<img />')
-        .attr('src', node.img_url);
+        .attr('src', node.img_url)
+        .attr('alt', node.id + ', ' + node.position + ', ' + node.company.name);
 
     // overlay
     var $overlay = $('<div></div>')

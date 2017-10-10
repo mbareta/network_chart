@@ -152,6 +152,7 @@ global.initChart = function (runtime, element, data) {
                 listElementNode.dataset.mit_tooltip = node.id;
                 var imgNode = d.createElement('img');
                 imgNode.src = node.img_url;
+                imgNode.alt = node.id + ', ' + node.position + ', ' + node.company.name;
                 imgNode.onclick = function () {
                     handleMouseClickNode(node);
                 };
