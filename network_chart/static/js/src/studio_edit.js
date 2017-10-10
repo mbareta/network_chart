@@ -1,6 +1,6 @@
 function StudioEdit(runtime, element) {
 
-    var CHARACTER_LIMIT = 675;
+    var CHARACTER_LIMIT = 1050;
     var currentJsonPath;
     var currentJsonValidation;
 
